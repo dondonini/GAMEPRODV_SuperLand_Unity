@@ -43,12 +43,6 @@ public class MapManager : MonoBehaviour {
     /* Variables                                                            */
     /************************************************************************/
 
-    /* This array holds all of the instances to keep track of
-     * when loading map info. */
-    [SerializeField]
-    public List<Transform> viewableInstances;
-
-    [ReadOnly]
     public List<MapSegmentData> mapSegments;
 
     /************************************************************************/
@@ -57,7 +51,7 @@ public class MapManager : MonoBehaviour {
 
     GameManager gameManager;
 
-    private bool activePass = false;
+    
 
     // Use this for initialization
     void Start () 
@@ -112,17 +106,9 @@ public class MapManager : MonoBehaviour {
 
             bool result = false;
 
-            for (int inst = 0; inst < viewableInstances.Count; inst++)
+            for (int inst = 0; inst < gameManager.subjects.Count; inst++)
             {
-                Transform currentInstance = viewableInstances[inst];
-
-                // Check if instance is still alive
-                // and remove it is dead
-                if (currentInstance == null)
-                {
-                    viewableInstances.Remove(currentInstance);
-                    continue;
-                }
+                Transform currentInstance = gameManager.subjects[inst];
 
                 // Check if segment is in instance's radius
                 float distanceSqr = (currentInstance.position - currentData.move.GetRootPosition()).sqrMagnitude;

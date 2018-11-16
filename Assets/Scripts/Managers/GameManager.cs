@@ -38,11 +38,12 @@ public class GameManager : MonoBehaviour {
 
     public float WORLD_SPAWN_HEIGHT = -100.0f;
     public float defaultViewableRadius = 10.0f;
+    public List<Transform> subjects;
 
     // Use this for initialization
     void Start () {
-		
-	}
+
+    }
 	
 	// Update is called once per frame
 	void Update () {
