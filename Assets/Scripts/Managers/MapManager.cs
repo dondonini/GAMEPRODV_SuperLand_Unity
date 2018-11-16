@@ -57,6 +57,8 @@ public class MapManager : MonoBehaviour {
 
     GameManager gameManager;
 
+    private bool activePass = false;
+
     // Use this for initialization
     void Start () 
     {
@@ -95,40 +97,47 @@ public class MapManager : MonoBehaviour {
 
     void UpdateMap()
     {
-        for (int inst = 0; inst < viewableInstances.Count; inst++)
-        {
-            Transform currentInstance = viewableInstances[inst];
 
-            // Check if instance is still alive
+        for (int seg = 0; seg < mapSegments.Count; seg++)
+        {
+            MapSegmentData currentData = mapSegments[seg];
+
+            // Check if segment is still alive
             // and remove it is dead
-            if (currentInstance == null)
-            {
-                viewableInstances.Remove(currentInstance);
+            if (currentData.tran == null)
+            {                     
+                mapSegments.Remove(currentData);
                 continue;
             }
 
-            for (int seg = 0; seg < mapSegments.Count; seg++)
-            {
-                MapSegmentData currentData = mapSegments[seg];
+            bool result = false;
 
-                // Check if segment is still alive
+            for (int inst = 0; inst < viewableInstances.Count; inst++)
+            {
+                Transform currentInstance = viewableInstances[inst];
+
+                // Check if instance is still alive
                 // and remove it is dead
-                if (currentData.tran == null)
-                {                     
-                    mapSegments.Remove(currentData);
+                if (currentInstance == null)
+                {
+                    viewableInstances.Remove(currentInstance);
                     continue;
                 }
 
                 // Check if segment is in instance's radius
                 float distanceSqr = (currentInstance.position - currentData.move.GetRootPosition()).sqrMagnitude;
 
-                
-
                 if (distanceSqr < currentData.viewingRadius)
-                    currentData.move.SegmentEnabled(true);
-                else
-                    currentData.move.SegmentEnabled(false);
+                {
+                    result = true;
+                }
+                
             }
+
+            if (result)
+                currentData.move.SegmentEnabled(true);
+            else
+                currentData.move.SegmentEnabled(false);
         }
     }
 }
