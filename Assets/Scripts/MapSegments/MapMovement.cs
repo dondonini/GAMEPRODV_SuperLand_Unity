@@ -62,7 +62,7 @@ public class MapMovement : MonoBehaviour {
     void UpdateEnabled()
     {
         if (!segmentEnabled)
-            targetPosition.y = gameManager.WORLD_SPAWN_HEIGHT;
+            targetPosition.y = gameManager.despawnHeight;
         else
             targetPosition = rootPosition;
     }

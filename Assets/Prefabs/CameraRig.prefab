@@ -43,8 +43,8 @@ Camera:
   serializedVersion: 2
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_SensorSize: {x: 36, y: 24}
+  m_projectionMatrixMode: 2
+  m_SensorSize: {x: 70.41, y: 52.63}
   m_LensShift: {x: 0, y: 0}
   m_GateFitMode: 2
   m_FocalLength: 50
@@ -56,7 +56,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 55.515667
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -127,10 +127,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 917e532834b80e34e9f3b864336d9177, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraDistance: 20
+  cameraDistance: 10
   cameraAngleHeight: 30
-  cameraAngleRotation: 0
+  cameraAngleRotation: 45
   speedDamp: 1
+  targetOffset: {x: 0, y: 1, z: 0}
   zoomPadding: 20
   mainCamera: {fileID: 6978952350801798791}
   cameraAim: {fileID: 6978952351124194713}

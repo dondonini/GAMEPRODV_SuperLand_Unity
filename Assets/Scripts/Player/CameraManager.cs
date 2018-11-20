@@ -168,6 +168,19 @@ public class CameraManager : MonoBehaviour {
         // Calculate hypotenuse
         float hyp = cameraDistance;
 
+        // Picking the lowest FOV (height vs width) according to the screen resolution
+        // Lowest FOV wins
+        float lowestFOV = 0.0f;
+        
+        if (Camera.main.fieldOfView < CalculateFOVHeightFromFOVWidth(Camera.main.fieldOfView) * 0.5f)
+        {
+            lowestFOV = Camera.main.fieldOfView;
+        }
+        else
+        {
+            lowestFOV = CalculateFOVHeightFromFOVWidth(Camera.main.fieldOfView) * 0.5f;
+        }
+
         // Only for multi subject situations
         if (autoZoom)
         {
@@ -177,7 +190,7 @@ public class CameraManager : MonoBehaviour {
                 // Distance between both subjects
                 float distBetween = Vector3.Distance(gm.subjects[0].position, gm.subjects[1].position) + zoomPadding;
 
-                hyp = (distBetween * 0.5f) * Mathf.Tan((CalculateFOVHeightFromFOVWidth(Camera.main.fieldOfView) * 0.5f) * Mathf.Deg2Rad);
+                hyp = (distBetween * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
             }
 
             // Calculate zoom to accommodate more than 2 subjects
@@ -187,7 +200,7 @@ public class CameraManager : MonoBehaviour {
                 {
                     float maxDistance = Vector3.Distance(tempBounds.center, tempBounds.max) * 2 + zoomPadding;
 
-                    hyp = (maxDistance * 0.5f) * Mathf.Tan((CalculateFOVHeightFromFOVWidth(Camera.main.fieldOfView) * 0.5f) * Mathf.Deg2Rad);
+                    hyp = (maxDistance * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
                 }
             }
         }

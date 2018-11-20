@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour {
     /* Variables                                                            */
     /************************************************************************/
 
-    public float WORLD_SPAWN_HEIGHT = -100.0f;
+    public float despawnHeight = -100.0f;
     public float defaultViewableRadius = 10.0f;
     public List<Transform> subjects;
 
@@ -47,6 +47,31 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+		DespawnDeadSubjects();
 	}
+
+    void DespawnDeadSubjects()
+    {
+        for (int s = 0; s < subjects.Count; s++)
+        {
+            if (subjects[s].position.y <= despawnHeight)
+            {
+                if (subjects[s].CompareTag("Player"))
+                {
+                    // TODO: Kill player here
+                }
+                else if (subjects[s].CompareTag("Enemies"))
+                {
+                    // TODO: Kill enemies here
+                }
+                else
+                {
+                    Destroy(subjects[s].gameObject);
+                }
+
+                // Remove current subject in subject list
+                subjects.RemoveAt(s);
+            }
+        }
+    }
 }
