@@ -40,6 +40,9 @@ public class GameManager : MonoBehaviour {
     public float defaultViewableRadius = 10.0f;
     public List<Transform> subjects;
 
+    bool isWon = false;
+    bool isLost = false;
+
     // Use this for initialization
     void Start () {
 
@@ -58,7 +61,7 @@ public class GameManager : MonoBehaviour {
             {
                 if (subjects[s].CompareTag("Player"))
                 {
-                    // TODO: Kill player here
+                    LoseState();
                 }
                 else if (subjects[s].CompareTag("Enemies"))
                 {
@@ -73,5 +76,18 @@ public class GameManager : MonoBehaviour {
                 subjects.RemoveAt(s);
             }
         }
+    }
+
+    public void WinState()
+    {
+        if (isWon) return;
+    }
+
+    public void LoseState()
+    {
+        if (isLost) return;
+        // TODO: Make a lost state
+
+        Debug.Log("Player won!");
     }
 }

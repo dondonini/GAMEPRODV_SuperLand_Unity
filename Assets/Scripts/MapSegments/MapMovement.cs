@@ -32,6 +32,7 @@ public class MapMovement : MonoBehaviour {
     Vector3 previousTargetPosition;
     Vector3 previousPosition;
     Coroutine currentTween;
+    List<Transform> subjectChildren;
 
 	// Use this for initialization
 	void Start () {
@@ -62,9 +63,42 @@ public class MapMovement : MonoBehaviour {
     void UpdateEnabled()
     {
         if (!segmentEnabled)
+        {
             targetPosition.y = gameManager.despawnHeight;
+
+            // Remove any children from the subject list if any
+            for (int c = 0; c < transform.childCount; c++)
+            {
+                for (int s = 0; s < gameManager.subjects.Count; s++)
+                {
+                    if (transform.GetChild(c) == gameManager.subjects[s])
+                    {
+                        if (subjectChildren == null)
+                            subjectChildren = new List<Transform>();
+
+                        // Add subject into local cache
+                        subjectChildren.Add(transform.GetChild(c).transform);
+
+                        // Remove from public subject list
+                        gameManager.subjects.RemoveAt(s);
+                    }
+                }
+            }
+        }
         else
+        {
             targetPosition = rootPosition;
+
+            // Add cached subject back to public subject list
+            if (subjectChildren != null && subjectChildren.Count != 0)
+            {
+                for (int i = 0; i < subjectChildren.Count; i++)
+                {
+                    gameManager.subjects.Add(subjectChildren[i]);
+                    subjectChildren.RemoveAt(i);
+                }
+            }
+        }
     }
 
     public void SegmentEnabled(bool val)

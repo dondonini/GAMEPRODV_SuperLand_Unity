@@ -9,7 +9,10 @@ public class PlayerController : MonoBehaviour {
     /************************************************************************/
 
     [SerializeField]
-    float movementSpeed = 10.0f;
+    float movementSpeed = 750.0f;
+
+    [SerializeField]
+    float movementDrag = 2.0f;
 
     [SerializeField]
     float jumpForce = 5.0f;
@@ -18,22 +21,17 @@ public class PlayerController : MonoBehaviour {
     float groundDistance = 1.0f;
 
     [SerializeField]
-    float jumpHeight = 0.5f;
-
-    [SerializeField]
     float dashDistance = 1.0f;
 
     [SerializeField]
-    Vector3 linearDrag = Vector3.zero;
+    [Tooltip("Double tap detection")]
+    float buttonCooldown = 0.5f;
 
     /************************************************************************/
     /* References                                                           */
     /************************************************************************/
 
-    [SerializeField]
-    CharacterController cc;
-    [SerializeField]
-    Transform groundChecker;
+    Rigidbody rb;
 
     /************************************************************************/
     /* Runtime Variables                                                    */
@@ -47,6 +45,7 @@ public class PlayerController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		
+        rb = transform.GetComponent<Rigidbody>();
 	}
 	
 	// Update is called once per frame
@@ -55,33 +54,29 @@ public class PlayerController : MonoBehaviour {
         isGrounded = IsGrounded();
 
         UpdateInput();
+    }
 
-        // Adjust player velocity if in air
-        if (isGrounded && playerVelocity.y < 0)
-            playerVelocity.y = 0.0f;
-
-        UpdatePlayerGravity();
-
-        UpdateLinearDrag();
+    private void LateUpdate()
+    {
+        UpdateDrag(movementDrag);
     }
 
     bool IsGrounded()
     {
-        return Physics.CheckSphere(groundChecker.position, groundDistance, LayerMask.GetMask("Ground"), QueryTriggerInteraction.Ignore);
-        
+        // Calculate bottom point of player
+        Vector3 groundPosition = transform.position;
+        groundPosition.y -= transform.localScale.y * 0.5f;
+
+        return Physics.CheckSphere(groundPosition, groundDistance, LayerMask.GetMask("Ground"), QueryTriggerInteraction.Ignore);
     }
 
-    void UpdatePlayerGravity()
+    // Applies linear drag to only the X and Z axis
+    void UpdateDrag(float _dragAmount)
     {
-        playerVelocity.y += Physics.gravity.y * Time.deltaTime;
-        cc.Move(playerVelocity * Time.deltaTime);
-    }
-
-    void UpdateLinearDrag()
-    {
-        playerVelocity.x /= 1 + linearDrag.x * Time.deltaTime;
-        playerVelocity.y /= 1 + linearDrag.y * Time.deltaTime;
-        playerVelocity.z /= 1 + linearDrag.z * Time.deltaTime;
+        Vector3 vel = rb.velocity;
+        vel.x = -_dragAmount * vel.x;
+        vel.z = -_dragAmount * vel.z;
+        rb.AddForce(new Vector3(vel.x, 0.0f, vel.z));
     }
 
     /************************************************************************/
@@ -105,7 +100,6 @@ public class PlayerController : MonoBehaviour {
 
     void MovePlayer()
     {
-
         // Get move inputs
         Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
@@ -114,26 +108,16 @@ public class PlayerController : MonoBehaviour {
         relativeMove.Scale(Vector3.forward + Vector3.right);
 
         // Move player
-        cc.Move(relativeMove * Time.deltaTime * movementSpeed);
-
-        // Turn player according to move direction
-        if (relativeMove != Vector3.zero)
-            transform.forward = relativeMove;
-
-        
+        rb.AddForce(relativeMove * Time.deltaTime * movementSpeed);
     }
 
     void JumpPlayer()
     {
-        playerVelocity.y += Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y);
+        rb.AddForce(new Vector3(0, jumpForce, 0));
     }
 
     void DashPlayer()
     {
-        Debug.Log("Dash");
-        playerVelocity += Vector3.Scale(transform.forward,
-                                   dashDistance * new Vector3((Mathf.Log(1f / (Time.deltaTime * linearDrag.x + 1)) / -Time.deltaTime),
-                                                              0,
-                                                              (Mathf.Log(1f / (Time.deltaTime * linearDrag.z + 1)) / -Time.deltaTime)));
+        // TODO: Add dash
     }
 }

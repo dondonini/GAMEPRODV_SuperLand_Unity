@@ -8,9 +8,11 @@ public class CameraManager : MonoBehaviour {
     [Range(0, 180)]
     public float cameraAngleHeight = 30.0f;
     public float cameraAngleRotation = 45.0f;
-    public float speedDamp = 0.001f;
+    public float cameraMovementDamp = 1.0f;
+    public float cameraRotationDamp = 0.2f;
     public Vector3 targetOffset = Vector3.zero;
     public float zoomPadding = 20;
+    public float focusThreshold = 50.0f;
     public Transform mainCamera;
     public Transform cameraAim;
     [SerializeField]
@@ -27,20 +29,14 @@ public class CameraManager : MonoBehaviour {
     private Vector3 cameraAimV = Vector3.zero;
     private float rigRotationV = 0.0f;
     private Bounds tempBounds;
+    private Transform[] subjectsInFocus;
 
     // This only enables if there are more than one subject in the shot
     private bool autoZoom = false;
 
     private void OnValidate()
     {
-        if (cameraAngleRotation > 360.0f)
-        {
-            cameraAngleRotation = 0.0f;
-        }
-        else if (cameraAngleRotation < 0.0f)
-        {
-            cameraAngleRotation = 360.0f;
-        }
+        AdjustCameraRotation(0.0f);
     }
 
     // Use this for initialization
@@ -48,29 +44,40 @@ public class CameraManager : MonoBehaviour {
         // Caching
 		gm = GameManager.GetInstance();
 	}
-	
-	// Update is called once per frame
-	void LateUpdate () {
+
+    private void Update()
+    {
+        UpdateInput();
+    }
+
+    // Update is called once per frame
+    void LateUpdate () {
+
+        subjectsInFocus = UpdateSubjectsInFocus();
 
         Vector3 targetPosition = SolveTargetPosition();
 
         // SmoothDamp rig position
-        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref mainCameraV, speedDamp);
+        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref mainCameraV, cameraMovementDamp);
 
         // SmoothDamp camera position
-        mainCamera.transform.localPosition = Vector3.SmoothDamp(mainCamera.transform.localPosition, CalculateCameraPosition(Vector3.zero), ref rigV, speedDamp);
+        mainCamera.transform.localPosition = Vector3.SmoothDamp(mainCamera.transform.localPosition, CalculateCameraPosition(Vector3.zero), ref rigV, cameraMovementDamp);
 
         // SmoothDamp target position
-        cameraAim.position = Vector3.SmoothDamp(cameraAim.position, targetPosition, ref cameraAimV, speedDamp);
+        cameraAim.position = Vector3.SmoothDamp(cameraAim.position, targetPosition, ref cameraAimV, cameraMovementDamp);
 
         // SmoothDamp rig rotation
         Vector3 rigEulerAngle = transform.eulerAngles;
-        rigEulerAngle.y = Mathf.SmoothDampAngle(rigEulerAngle.y, cameraAngleRotation, ref rigRotationV, speedDamp);
+        rigEulerAngle.y = Mathf.SmoothDampAngle(rigEulerAngle.y, cameraAngleRotation, ref rigRotationV, cameraRotationDamp);
         transform.eulerAngles = rigEulerAngle;
 
+        // Aim camera at smooth target
         mainCamera.LookAt(cameraAim);
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
     private void OnDrawGizmosSelected()
     {
         if (!showDebug) return;
@@ -89,29 +96,113 @@ public class CameraManager : MonoBehaviour {
 
         // Target visuals
         Gizmos.color = Color.blue;
-        if (gm.subjects.Count == 1)
+        if (subjectsInFocus.Length == 1)
         {
-            Gizmos.DrawCube(gm.subjects[0].position,new Vector3(0.1f, 0.1f, 0.1f));
+            Gizmos.DrawCube(subjectsInFocus[0].position,new Vector3(0.1f, 0.1f, 0.1f));
         }
-        else if (gm.subjects.Count == 2)
+        else if (subjectsInFocus.Length == 2)
         {
-            Transform sub1 = gm.subjects[0];
-            Transform sub2 = gm.subjects[1];
+            Transform sub1 = subjectsInFocus[0];
+            Transform sub2 = subjectsInFocus[1];
 
             Gizmos.DrawLine(sub1.position, sub2.position);
             Gizmos.DrawCube(sub1.position,new Vector3(0.1f, 0.1f, 0.1f));
             Gizmos.DrawCube(sub2.position,new Vector3(0.1f, 0.1f, 0.1f));
         }
-        else if (gm.subjects.Count >= 3)
+        else if (subjectsInFocus.Length >= 3)
         {
             Gizmos.DrawWireCube(tempBounds.center, tempBounds.size);
-            for (int i = 0; i < gm.subjects.Count; i++)
+            for (int i = 0; i < subjectsInFocus.Length; i++)
             {
-                Gizmos.DrawCube(gm.subjects[i].position,new Vector3(0.1f, 0.1f, 0.1f));
+                Gizmos.DrawCube(subjectsInFocus[i].position,new Vector3(0.1f, 0.1f, 0.1f));
             }
         }
         
         
+    }
+
+    /// <summary>
+    /// Update input interactions
+    /// </summary>
+    void UpdateInput()
+    {
+        //////////////////////////////////////////////////////////////////////////
+        /// Keyboard and Mouse
+        /// 
+
+        /************************************************************************/
+        /* Camera Rotation                                                      */
+        /************************************************************************/
+
+        if (Input.GetButton("Fire2"))
+        {
+            if (Input.GetAxis("Mouse X") != 0.0f)
+            {
+                AdjustCameraRotation(Input.GetAxis("Mouse X"));
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        /// Controller
+        /// 
+
+        /************************************************************************/
+        /* Camera Rotation                                                      */
+        /************************************************************************/
+
+        if (Input.GetAxis("Horizontal2") != 0.0f)
+        {
+            AdjustCameraRotation(Input.GetAxis("Horizontal2"));
+        }
+    }
+
+    void AdjustCameraRotation(float _adjustment)
+    {
+        cameraAngleRotation += _adjustment;
+
+        if (cameraAngleRotation > 360.0f)
+        {
+            cameraAngleRotation = 0.0f;
+        }
+        else if (cameraAngleRotation < 0.0f)
+        {
+            cameraAngleRotation = 360.0f;
+        }
+    }
+
+    Transform[] UpdateSubjectsInFocus()
+    {
+        if (gm.subjects.Count <= 2)
+        {
+            return gm.subjects.ToArray();
+        }
+
+        List<Transform> result = new List<Transform>();
+
+        for (int s = 0; s < gm.subjects.Count; s++)
+        {
+            float totalDistance = 0;
+            Transform currentTrans = gm.subjects[s];
+
+            for (int other = 0; other < gm.subjects.Count; other++)
+            {
+                if (currentTrans == gm.subjects[other])
+                    continue;
+
+                float distanceFrom = Vector3.Distance(currentTrans.position, gm.subjects[other].position);
+                
+                totalDistance += distanceFrom;
+            }
+
+            float distanceAvg = totalDistance / (gm.subjects.Count - 1);
+
+            if (distanceAvg < focusThreshold)
+            {
+                result.Add(currentTrans);
+            }
+        }
+
+        return result.ToArray();
     }
 
     Vector3 SolveTargetPosition()
@@ -124,37 +215,37 @@ public class CameraManager : MonoBehaviour {
         }
 
         // Solving for singular target
-        if (gm.subjects.Count == 1)
+        if (subjectsInFocus.Length == 1)
         {
             // Disable auto zoom
             autoZoom = false;
 
-            return gm.subjects[0].position + targetOffset;
+            return subjectsInFocus[0].position + targetOffset;
         }
 
         // Solving for dual targets
-        else if (gm.subjects.Count == 2)
+        else if (subjectsInFocus.Length == 2)
         {
             // Enable auto zoom
             autoZoom = true;
 
             // Calculate middle position
-            Vector3 midPoint = Vector3.Lerp(gm.subjects[0].position, gm.subjects[1].position, 0.5f);
+            Vector3 midPoint = Vector3.Lerp(subjectsInFocus[0].position, subjectsInFocus[1].position, 0.5f);
 
             return midPoint + targetOffset;
         }
 
         // Solving for multiple targets
-        else if (gm.subjects.Count >= 3)
+        else if (subjectsInFocus.Length >= 3)
         {
             // Enable auto zoom
             autoZoom = true;
 
-            tempBounds = new Bounds(gm.subjects[0].position, Vector3.zero);
+            tempBounds = new Bounds(subjectsInFocus[0].position, Vector3.zero);
 
-            for (int i = 1; i < gm.subjects.Count; i++)
+            for (int i = 1; i < subjectsInFocus.Length; i++)
             {
-                tempBounds.Encapsulate(gm.subjects[i].position);
+                tempBounds.Encapsulate(subjectsInFocus[i].position);
             }
             
             return tempBounds.center + targetOffset;
@@ -185,12 +276,13 @@ public class CameraManager : MonoBehaviour {
         if (autoZoom)
         {
             // Calculate zoom to accommodate 2 subjects
-            if (gm.subjects.Count == 2)
+            if (subjectsInFocus.Length == 2)
             {
                 // Distance between both subjects
-                float distBetween = Vector3.Distance(gm.subjects[0].position, gm.subjects[1].position) + zoomPadding;
+                float distBetween = Vector3.Distance(subjectsInFocus[0].position, subjectsInFocus[1].position) + zoomPadding;
 
                 hyp = (distBetween * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
+                hyp += cameraDistance;
             }
 
             // Calculate zoom to accommodate more than 2 subjects
@@ -201,6 +293,7 @@ public class CameraManager : MonoBehaviour {
                     float maxDistance = Vector3.Distance(tempBounds.center, tempBounds.max) * 2 + zoomPadding;
 
                     hyp = (maxDistance * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
+                    hyp += cameraDistance;
                 }
             }
         }
