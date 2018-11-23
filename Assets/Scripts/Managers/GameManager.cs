@@ -38,7 +38,11 @@ public class GameManager : MonoBehaviour {
 
     public float despawnHeight = -100.0f;
     public float defaultViewableRadius = 10.0f;
-    public List<Transform> subjects;
+
+    [SerializeField]
+    private Transform mainSubject;
+    [SerializeField]
+    private List<Transform> subjects;
 
     bool isWon = false;
     bool isLost = false;
@@ -52,6 +56,90 @@ public class GameManager : MonoBehaviour {
 	void Update () {
 		DespawnDeadSubjects();
 	}
+
+    public void SetMainSubject(Transform _newMainSubject)
+    {
+        if (mainSubject == _newMainSubject)
+        {
+            Debug.LogWarning(_newMainSubject + " is already the main subject... what are you doing?");
+            return;
+        }
+
+        // Set new main subject
+        mainSubject =_newMainSubject;
+    }
+
+    public void AddSubject(Transform _newSubject)
+    {
+        // Prevent duplicates
+        if (mainSubject && mainSubject == _newSubject) return;
+        for (int s = 0; s < subjects.Count; s++)
+        {
+            if (subjects[s] == mainSubject) return;
+        }
+
+        subjects.Add(_newSubject);
+    }
+
+    public void RemoveMainSubject()
+    {
+        mainSubject = null;
+    }
+
+    public void RemoveSubject(Transform _targetSubject)
+    {
+        if (mainSubject == _targetSubject)
+        {
+            subjects.Remove(_targetSubject);
+            return;
+        }
+
+        for (int s = 0; s < subjects.Count; s++)
+        {
+            if (subjects[s] == _targetSubject)
+            {
+                subjects.RemoveAt(s);
+                return;
+            }
+        }
+
+        // If it gets to hear, it means that the targeted subject was not found
+        Debug.LogWarning("Subject " + _targetSubject + " is not in the subject list.");
+    }
+
+    public Transform[] GetAllSubjects()
+    {
+        Transform[] tempArray;
+
+        if (mainSubject)
+        {        
+            tempArray = new Transform[subjects.Count + 1];
+
+            // Add main subject as first
+            tempArray[0] = mainSubject;
+
+            // Add the rest of the subjects
+            for (int s = 1; s < subjects.Count + 1; s++)
+            {
+                tempArray[s] = subjects[s - 1];
+            }
+        }
+        else
+        { 
+            // Just set it as the subject array
+            tempArray = subjects.ToArray();
+        }
+
+        return tempArray;
+    }
+
+    public int GetAllSubjectCount()
+    {
+        if (mainSubject)
+            return subjects.Count + 1;
+        else
+            return subjects.Count;
+    }
 
     void DespawnDeadSubjects()
     {

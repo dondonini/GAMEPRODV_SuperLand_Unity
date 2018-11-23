@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour {
 
-    public float cameraDistance = 100.0f;
+    [Range(0.1f, 100.0f)]
+    public float cameraDistance = 10.0f;
     [Range(0, 180)]
     public float cameraAngleHeight = 30.0f;
     public float cameraAngleRotation = 45.0f;
@@ -28,22 +29,28 @@ public class CameraManager : MonoBehaviour {
     private Vector3 mainCameraV = Vector3.zero;
     private Vector3 cameraAimV = Vector3.zero;
     private float rigRotationV = 0.0f;
+    private Vector2 previousRotationAdjust = Vector2.zero;
     private Bounds tempBounds;
     private Transform[] subjectsInFocus;
+    private float dynamicMovementDamp;
+    private float dynamicRotationDamp;
 
     // This only enables if there are more than one subject in the shot
     private bool autoZoom = false;
 
     private void OnValidate()
     {
-        AdjustCameraRotation(0.0f);
+        AdjustCameraRotation(new Vector2(0.0f, 0.0f));
     }
 
     // Use this for initialization
     void Start () {
         // Caching
 		gm = GameManager.GetInstance();
-	}
+        dynamicMovementDamp = cameraMovementDamp;
+        dynamicRotationDamp = cameraRotationDamp;
+
+    }
 
     private void Update()
     {
@@ -58,17 +65,17 @@ public class CameraManager : MonoBehaviour {
         Vector3 targetPosition = SolveTargetPosition();
 
         // SmoothDamp rig position
-        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref mainCameraV, cameraMovementDamp);
+        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref mainCameraV, dynamicMovementDamp);
 
         // SmoothDamp camera position
-        mainCamera.transform.localPosition = Vector3.SmoothDamp(mainCamera.transform.localPosition, CalculateCameraPosition(Vector3.zero), ref rigV, cameraMovementDamp);
+        mainCamera.transform.localPosition = Vector3.SmoothDamp(mainCamera.transform.localPosition, CalculateCameraPosition(Vector3.zero), ref rigV, dynamicRotationDamp);
 
         // SmoothDamp target position
-        cameraAim.position = Vector3.SmoothDamp(cameraAim.position, targetPosition, ref cameraAimV, cameraMovementDamp);
+        cameraAim.position = Vector3.SmoothDamp(cameraAim.position, targetPosition, ref cameraAimV, dynamicMovementDamp);
 
         // SmoothDamp rig rotation
         Vector3 rigEulerAngle = transform.eulerAngles;
-        rigEulerAngle.y = Mathf.SmoothDampAngle(rigEulerAngle.y, cameraAngleRotation, ref rigRotationV, cameraRotationDamp);
+        rigEulerAngle.y = Mathf.SmoothDampAngle(rigEulerAngle.y, cameraAngleRotation, ref rigRotationV, dynamicRotationDamp);
         transform.eulerAngles = rigEulerAngle;
 
         // Aim camera at smooth target
@@ -138,27 +145,65 @@ public class CameraManager : MonoBehaviour {
         {
             if (Input.GetAxis("Mouse X") != 0.0f)
             {
-                AdjustCameraRotation(Input.GetAxis("Mouse X"));
+                AdjustCameraRotation(new Vector2(Input.GetAxis("Mouse X"), 0.0f));
+            }
+
+            if (Input.GetAxis("Mouse Y") != 0.0f)
+            {
+                AdjustCameraRotation(new Vector2(0.0f, Input.GetAxis("Mouse Y")));
             }
         }
+
+        /************************************************************************/
+        /* Camera Zoom                                                          */
+        /************************************************************************/
+
+        if (Input.GetAxis("Mouse ScrollWheel") != 0.0f)
+            AdjustCameraZoom(Input.GetAxis("Mouse ScrollWheel"));
 
         //////////////////////////////////////////////////////////////////////////
         /// Controller
         /// 
 
-        /************************************************************************/
-        /* Camera Rotation                                                      */
-        /************************************************************************/
+            /************************************************************************/
+            /* Camera Rotation                                                      */
+            /************************************************************************/
 
-        if (Input.GetAxis("Horizontal2") != 0.0f)
+        if (Input.GetAxis("Player1_RightStickX") != 0.0f)
         {
-            AdjustCameraRotation(Input.GetAxis("Horizontal2"));
+            AdjustCameraRotation(new Vector2(Input.GetAxis("Player1_RightStickX"), 0.0f));
+        }
+
+        if (Input.GetAxis("Player1_RightStickY") != 0.0f)
+        {
+            AdjustCameraRotation(new Vector2(0.0f, Input.GetAxis("Player1_RightStickY")));
         }
     }
 
-    void AdjustCameraRotation(float _adjustment)
+    void AdjustCameraRotation(Vector2 _adjustment)
     {
-        cameraAngleRotation += _adjustment;
+        cameraAngleRotation += _adjustment.x;
+        cameraAngleHeight = Mathf.Clamp(cameraAngleHeight - _adjustment.y, 0.0f, 90.0f);
+
+        float fastestMovement = 1.0f;
+
+        if (_adjustment.x > fastestMovement)
+        {
+            dynamicMovementDamp = 0.1f;
+        }
+        else
+        {
+            dynamicMovementDamp = cameraMovementDamp;
+        }
+
+        if (_adjustment.y > fastestMovement)
+        {
+            dynamicRotationDamp = 0.1f;
+        }
+        else
+        {
+            dynamicRotationDamp = cameraRotationDamp;
+        }
 
         if (cameraAngleRotation > 360.0f)
         {
@@ -170,31 +215,36 @@ public class CameraManager : MonoBehaviour {
         }
     }
 
+    void AdjustCameraZoom(float _adjustment)
+    {
+        cameraDistance = Mathf.Clamp(cameraDistance - _adjustment, 0.1f, 100.0f);
+    }
+
     Transform[] UpdateSubjectsInFocus()
     {
-        if (gm.subjects.Count <= 2)
+        if (gm.GetAllSubjectCount() <= 2)
         {
-            return gm.subjects.ToArray();
+            return gm.GetAllSubjects();
         }
 
         List<Transform> result = new List<Transform>();
 
-        for (int s = 0; s < gm.subjects.Count; s++)
+        for (int s = 0; s < gm.GetAllSubjectCount(); s++)
         {
             float totalDistance = 0;
-            Transform currentTrans = gm.subjects[s];
+            Transform currentTrans = gm.GetAllSubjects()[s];
 
-            for (int other = 0; other < gm.subjects.Count; other++)
+            for (int other = 0; other < gm.GetAllSubjectCount(); other++)
             {
-                if (currentTrans == gm.subjects[other])
+                if (currentTrans == gm.GetAllSubjects()[other])
                     continue;
 
-                float distanceFrom = Vector3.Distance(currentTrans.position, gm.subjects[other].position);
+                float distanceFrom = Vector3.Distance(currentTrans.position, gm.GetAllSubjects()[other].position);
                 
                 totalDistance += distanceFrom;
             }
 
-            float distanceAvg = totalDistance / (gm.subjects.Count - 1);
+            float distanceAvg = totalDistance / (gm.GetAllSubjectCount() - 1);
 
             if (distanceAvg < focusThreshold)
             {
@@ -230,7 +280,7 @@ public class CameraManager : MonoBehaviour {
             autoZoom = true;
 
             // Calculate middle position
-            Vector3 midPoint = Vector3.Lerp(subjectsInFocus[0].position, subjectsInFocus[1].position, 0.5f);
+            Vector3 midPoint = Vector3.Lerp(subjectsInFocus[0].position, subjectsInFocus[1].position, Mathf.Clamp01(cameraDistance / 10.0f) * 0.5f);
 
             return midPoint + targetOffset;
         }
@@ -247,8 +297,11 @@ public class CameraManager : MonoBehaviour {
             {
                 tempBounds.Encapsulate(subjectsInFocus[i].position);
             }
-            
-            return tempBounds.center + targetOffset;
+
+            // Set micro zoom
+            Vector3 midPoint = Vector3.Lerp(subjectsInFocus[0].position, (tempBounds.center + targetOffset), Mathf.Clamp01(cameraDistance / 10.0f) * 0.5f);
+
+            return midPoint;
         }
 
         return Vector3.zero;
@@ -282,7 +335,6 @@ public class CameraManager : MonoBehaviour {
                 float distBetween = Vector3.Distance(subjectsInFocus[0].position, subjectsInFocus[1].position) + zoomPadding;
 
                 hyp = (distBetween * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
-                hyp += cameraDistance;
             }
 
             // Calculate zoom to accommodate more than 2 subjects
@@ -293,9 +345,19 @@ public class CameraManager : MonoBehaviour {
                     float maxDistance = Vector3.Distance(tempBounds.center, tempBounds.max) * 2 + zoomPadding;
 
                     hyp = (maxDistance * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
-                    hyp += cameraDistance;
                 }
             }
+        }
+
+        // Active zoom
+        if (cameraDistance < 10.0f)
+        {
+            // Zoom all the way
+            hyp = hyp * (cameraDistance / 10.0f);
+        }
+        else
+        {
+            hyp += cameraDistance;
         }
 
         // Calculate adjacent

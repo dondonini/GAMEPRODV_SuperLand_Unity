@@ -43,7 +43,8 @@ public class MapManager : MonoBehaviour {
     /* Variables                                                            */
     /************************************************************************/
 
-    public List<MapSegmentData> mapSegments;
+    [SerializeField]
+    private List<MapSegmentData> mapSegments;
 
     /************************************************************************/
     /* Caching                                                              */
@@ -106,9 +107,9 @@ public class MapManager : MonoBehaviour {
 
             bool result = false;
 
-            for (int inst = 0; inst < gameManager.subjects.Count; inst++)
+            for (int inst = 0; inst < gameManager.GetAllSubjectCount(); inst++)
             {
-                Transform currentInstance = gameManager.subjects[inst];
+                Transform currentInstance = gameManager.GetAllSubjects()[inst];
 
                 // Check if segment is in instance's radius
                 float distanceSqr = (currentInstance.position - currentData.move.GetRootPosition()).sqrMagnitude;
@@ -126,4 +127,6 @@ public class MapManager : MonoBehaviour {
                 currentData.move.SegmentEnabled(false);
         }
     }
+
+
 }

@@ -10,9 +10,13 @@ public class MapMovement : MonoBehaviour {
     [SerializeField]
     Vector3 rootPosition;
     [SerializeField]
-    float tweenDuraction = 1.0f;
+    float tweenInDuraction = 1.0f;
     [SerializeField]
-    EasingFunction.Ease tweenEaseFunction;
+    float tweenOutDuraction = 1.0f;
+    [SerializeField]
+    EasingFunction.Ease tweenEaseInFunction;
+    [SerializeField]
+    EasingFunction.Ease tweenEaseOutFunction;
 
 
     /************************************************************************/
@@ -69,9 +73,9 @@ public class MapMovement : MonoBehaviour {
             // Remove any children from the subject list if any
             for (int c = 0; c < transform.childCount; c++)
             {
-                for (int s = 0; s < gameManager.subjects.Count; s++)
+                for (int s = 0; s < gameManager.GetAllSubjectCount(); s++)
                 {
-                    if (transform.GetChild(c) == gameManager.subjects[s])
+                    if (transform.GetChild(c) == gameManager.GetAllSubjects()[s])
                     {
                         if (subjectChildren == null)
                             subjectChildren = new List<Transform>();
@@ -80,7 +84,7 @@ public class MapMovement : MonoBehaviour {
                         subjectChildren.Add(transform.GetChild(c).transform);
 
                         // Remove from public subject list
-                        gameManager.subjects.RemoveAt(s);
+                        gameManager.RemoveSubject(transform.GetChild(c).transform);
                     }
                 }
             }
@@ -94,7 +98,7 @@ public class MapMovement : MonoBehaviour {
             {
                 for (int i = 0; i < subjectChildren.Count; i++)
                 {
-                    gameManager.subjects.Add(subjectChildren[i]);
+                    gameManager.AddSubject(subjectChildren[i]);
                     subjectChildren.RemoveAt(i);
                 }
             }
@@ -148,11 +152,27 @@ public class MapMovement : MonoBehaviour {
     /// <returns></returns>
     IEnumerator UpdatePosition(System.Action<bool> callback)
     {
-        for (float elaspedTime = 0.0f; elaspedTime <= tweenDuraction; elaspedTime += Time.deltaTime)
-        {
-            float progress = elaspedTime / tweenDuraction;
+        float tweenDuration;
+        EasingFunction.Ease tweenFunction;
 
-            float easeExpression = EasingFunction.GetEasingFunction(tweenEaseFunction)(0.0f, 1.0f, progress);
+        if (segmentEnabled)
+        {
+            tweenDuration = tweenInDuraction;
+            tweenFunction = tweenEaseInFunction;
+        }
+        else
+        {
+            tweenDuration = tweenOutDuraction;
+            tweenFunction = tweenEaseOutFunction;
+        }
+
+        for (float elaspedTime = 0.0f; elaspedTime <= tweenDuration; elaspedTime += Time.deltaTime)
+        {
+            float progress = elaspedTime / tweenDuration;
+
+            float easeExpression;
+
+            easeExpression = EasingFunction.GetEasingFunction(tweenFunction)(0.0f, 1.0f, progress);
 
             transform.position = Vector3.LerpUnclamped(previousPosition, targetPosition, easeExpression);
 

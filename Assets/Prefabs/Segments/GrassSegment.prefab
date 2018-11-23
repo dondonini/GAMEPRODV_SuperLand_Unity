@@ -43,15 +43,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: GrassSegment
       objectReference: {fileID: 0}
-    - target: {fileID: 114821096904897590, guid: 5a32e0a18cd2d4541834f80fcfca4cf4,
-        type: 3}
-      propertyPath: tweenDuraction
-      value: 0.5
-      objectReference: {fileID: 0}
     - target: {fileID: 23630991983624032, guid: 5a32e0a18cd2d4541834f80fcfca4cf4,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 5a9242bf160cd4b489c6996e6e78dcbe, type: 2}
+    - target: {fileID: 4676834301140122, guid: 5a32e0a18cd2d4541834f80fcfca4cf4, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.475
+      objectReference: {fileID: 0}
+    - target: {fileID: 4676834301140122, guid: 5a32e0a18cd2d4541834f80fcfca4cf4, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5a32e0a18cd2d4541834f80fcfca4cf4, type: 3}
