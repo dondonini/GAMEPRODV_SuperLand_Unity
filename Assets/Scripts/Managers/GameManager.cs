@@ -44,6 +44,12 @@ public class GameManager : MonoBehaviour {
     [SerializeField]
     private List<Transform> subjects;
 
+    [SerializeField]
+    private int localCoins = 0;
+
+    [SerializeField]
+    private int localStars = 0;
+
     bool isWon = false;
     bool isLost = false;
 
