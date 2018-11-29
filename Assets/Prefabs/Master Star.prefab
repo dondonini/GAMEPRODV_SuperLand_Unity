@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1576090587881635512}
   - component: {fileID: 1576090587883888762}
   - component: {fileID: 1576090587883888763}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Master Star
   m_TagString: Untagged
   m_Icon: {fileID: 0}

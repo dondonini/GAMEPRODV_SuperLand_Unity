@@ -14,8 +14,10 @@ public class CameraManager : MonoBehaviour {
     public Vector3 targetOffset = Vector3.zero;
     public float zoomPadding = 20;
     public float focusThreshold = 50.0f;
-    public Transform mainCamera;
+    public Camera mainCamera;
+    public Camera guiCamera;
     public Transform cameraAim;
+    public Transform guiScreenSpace;
     [SerializeField]
     private bool showDebug = false;
 
@@ -41,6 +43,7 @@ public class CameraManager : MonoBehaviour {
     private void OnValidate()
     {
         AdjustCameraRotation(new Vector2(0.0f, 0.0f));
+        UpdateGUIScreenSpace();
     }
 
     // Use this for initialization
@@ -79,7 +82,12 @@ public class CameraManager : MonoBehaviour {
         transform.eulerAngles = rigEulerAngle;
 
         // Aim camera at smooth target
-        mainCamera.LookAt(cameraAim);
+        mainCamera.transform.LookAt(cameraAim);
+
+        // Sync main camera positon and rotation to GUICamera
+        guiCamera.transform.position = mainCamera.transform.position;
+        guiCamera.transform.rotation = mainCamera.transform.rotation;
+        UpdateGUIScreenSpace();
 	}
 
     /// <summary>
@@ -92,7 +100,7 @@ public class CameraManager : MonoBehaviour {
 
         // Camera to target smooth
         Gizmos.color = Color.red;
-        Gizmos.DrawLine(mainCamera.position, cameraAim.position);
+        Gizmos.DrawLine(mainCamera.transform.position, cameraAim.position);
         Gizmos.DrawCube(cameraAim.position,new Vector3(0.1f, 0.1f, 0.1f));
 
         // Camera to target target positions
@@ -377,13 +385,27 @@ public class CameraManager : MonoBehaviour {
 
     float CalculateFOVHeightFromFOVWidth(float fovWidth)
     {
-        Vector2 tempResolution = new Vector2(Screen.width, Screen.height);
         
         // Calculate adjacent
-        float adj = (tempResolution.x * 0.5f) * Mathf.Tan((fovWidth * 0.5f) * Mathf.Deg2Rad);
+        float adj = (GetScreenResolution().x * 0.5f) * Mathf.Tan((fovWidth * 0.5f) * Mathf.Deg2Rad);
 
-        float fovHeight = (((tempResolution.y * 0.5f) / adj) * Mathf.Rad2Deg) * 2.0f;
+        float fovHeight = (((GetScreenResolution().y * 0.5f) / adj) * Mathf.Rad2Deg) * 2.0f;
 
         return fovHeight;
+    }
+
+    Vector2 GetScreenResolution()
+    {
+        return new Vector2(Screen.width, Screen.height);
+    }
+
+    void UpdateGUIScreenSpace()
+    {
+        float height = 2.0f * guiCamera.orthographicSize;
+        float width = height * guiCamera.aspect;
+        float depth = guiCamera.farClipPlane;
+
+        guiScreenSpace.GetComponent<BoxCollider>().size = new Vector3(width, height, depth);
+        guiScreenSpace.transform.localPosition = new Vector3(0.0f, 0.0f, depth * 0.5f);
     }
 }

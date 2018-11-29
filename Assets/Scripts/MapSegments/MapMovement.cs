@@ -4,11 +4,20 @@ using UnityEngine;
 
 public class MapMovement : MonoBehaviour {
     
+    [Tooltip("Ignores manager instructions")]
+    public bool ignoreManager = false;
+
     [SerializeField]
     bool segmentEnabled = false;
 
+
+    [Header("Positioning")]
     [SerializeField]
     Vector3 rootPosition;
+    [SerializeField]
+    Vector3 targetPosition;
+
+    [Header("Animation Properties")]
     [SerializeField]
     float tweenInDuraction = 1.0f;
     [SerializeField]
@@ -18,6 +27,9 @@ public class MapMovement : MonoBehaviour {
     [SerializeField]
     EasingFunction.Ease tweenEaseOutFunction;
 
+    [Header("References")]
+    [SerializeField]
+    Renderer thisRenderer;
 
     /************************************************************************/
     /* Cache                                                                */
@@ -25,14 +37,9 @@ public class MapMovement : MonoBehaviour {
     GameManager gameManager;
     TweenFunction tweenFunction;
 
-    [SerializeField]
-    Renderer thisRenderer;
-
     /************************************************************************/
     /* Runtime Variables                                                    */
     /************************************************************************/
-    [SerializeField]
-    Vector3 targetPosition;
     Vector3 previousTargetPosition;
     Vector3 previousPosition;
     Coroutine currentTween;
@@ -41,16 +48,26 @@ public class MapMovement : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-        // Caching resources
+        // Grab resources
         gameManager = GameManager.GetInstance();
 
         // Setting default variables
         rootPosition = transform.position;
-        previousTargetPosition = transform.position;
+        targetPosition = rootPosition;
 
+        Vector3 startingPos = targetPosition;
+        startingPos.y = gameManager.despawnHeight;
+        transform.position = startingPos;
+
+        previousPosition = startingPos;
+
+        // Run starting functions
         UpdateEnabled();
-
-        transform.position = targetPosition;
+        
+        if (segmentEnabled)
+            thisRenderer.enabled = true;
+        else
+            thisRenderer.enabled = false;
     }
 	
 	// Update is called once per frame
@@ -68,46 +85,63 @@ public class MapMovement : MonoBehaviour {
     {
         if (!segmentEnabled)
         {
-            targetPosition.y = gameManager.despawnHeight;
-
-            // Remove any children from the subject list if any
-            for (int c = 0; c < transform.childCount; c++)
-            {
-                for (int s = 0; s < gameManager.GetAllSubjectCount(); s++)
-                {
-                    if (transform.GetChild(c) == gameManager.GetAllSubjects()[s])
-                    {
-                        if (subjectChildren == null)
-                            subjectChildren = new List<Transform>();
-
-                        // Add subject into local cache
-                        subjectChildren.Add(transform.GetChild(c).transform);
-
-                        // Remove from public subject list
-                        gameManager.RemoveSubject(transform.GetChild(c).transform);
-                    }
-                }
-            }
+            EnableSegment();
         }
         else
         {
-            targetPosition = rootPosition;
+            DisableSegment();   
+        }
+    }
 
-            // Add cached subject back to public subject list
-            if (subjectChildren != null && subjectChildren.Count != 0)
+    void EnableSegment()
+    {
+        targetPosition = rootPosition;
+        targetPosition.y = gameManager.despawnHeight;
+
+        // Remove any children from the subject list if any
+        for (int c = 0; c < transform.childCount; c++)
+        {
+            for (int s = 0; s < gameManager.GetAllSubjectCount(); s++)
             {
-                for (int i = 0; i < subjectChildren.Count; i++)
+                if (transform.GetChild(c) == gameManager.GetAllSubjects()[s])
                 {
-                    gameManager.AddSubject(subjectChildren[i]);
-                    subjectChildren.RemoveAt(i);
+                    if (subjectChildren == null)
+                        subjectChildren = new List<Transform>();
+
+                    // Add subject into local cache
+                    subjectChildren.Add(transform.GetChild(c).transform);
+
+                    // Remove from public subject list
+                    gameManager.RemoveSubject(transform.GetChild(c).transform);
                 }
+            }
+        }
+    }
+
+    void DisableSegment()
+    {
+        targetPosition = rootPosition;
+
+        // Add cached subject back to public subject list
+        if (subjectChildren != null && subjectChildren.Count != 0)
+        {
+            for (int i = 0; i < subjectChildren.Count; i++)
+            {
+                gameManager.AddSubject(subjectChildren[i]);
+                subjectChildren.RemoveAt(i);
             }
         }
     }
 
     public void SegmentEnabled(bool val)
     {
+        if (ignoreManager) return;
         segmentEnabled = val;
+    }
+
+    public bool IsSegmentEnabled()
+    {
+        return segmentEnabled;
     }
 
     public Vector3 GetRootPosition()

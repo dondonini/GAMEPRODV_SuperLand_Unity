@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3356344970497625166}
   - component: {fileID: 8319762962191916073}
   - component: {fileID: 5996079717513977565}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -29,7 +29,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1692955520941754}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -48,12 +48,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ed23d88bca02ca40b60bd61e80ce57e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 10
-  jumpForce: 5
+  movementSpeed: 1000
+  movementDrag: 2
+  jumpForce: 250
   groundDistance: 0.1
-  jumpHeight: 1
   dashDistance: 2
-  groundChecker: {fileID: 0}
+  buttonCooldown: 0.5
   currentCamera: {fileID: 0}
 --- !u!114 &114023443272490692
 MonoBehaviour:
