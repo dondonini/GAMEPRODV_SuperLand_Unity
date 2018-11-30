@@ -4,8 +4,13 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour {
 
+    [Header("Global Variables")]
     [Range(0.1f, 100.0f)]
     public float cameraDistance = 10.0f;
+    public float minZoom = 2.0f;
+    public float maxZoom = 100.0f;
+    [Tooltip("The transition point where the camera starts zooming into the main subject")]
+    public float zoomTransition = 10.0f;
     [Range(0, 180)]
     public float cameraAngleHeight = 30.0f;
     public float cameraAngleRotation = 45.0f;
@@ -14,75 +19,74 @@ public class CameraManager : MonoBehaviour {
     public Vector3 targetOffset = Vector3.zero;
     public float zoomPadding = 20;
     public float focusThreshold = 50.0f;
+
+
+    [Header("References")]
     public Camera mainCamera;
     public Camera guiCamera;
     public Transform cameraAim;
     public Transform guiScreenSpace;
-    [SerializeField]
-    private bool showDebug = false;
 
-    private GameManager gm;
+    [Header("Debugging")]
+    public bool showDebug = false;
 
-    /************************************************************************/
-    /* Runtime Variables                                                    */
-    /************************************************************************/
+    // States
+    public C_PlayerCamera playerCState;
 
-    private Vector3 rigV = Vector3.zero;
-    private Vector3 mainCameraV = Vector3.zero;
-    private Vector3 cameraAimV = Vector3.zero;
-    private float rigRotationV = 0.0f;
-    private Vector2 previousRotationAdjust = Vector2.zero;
-    private Bounds tempBounds;
-    private Transform[] subjectsInFocus;
-    private float dynamicMovementDamp;
-    private float dynamicRotationDamp;
+    CameraStates_SM currentState;
+    CameraStates_SM previousState;
 
-    // This only enables if there are more than one subject in the shot
-    private bool autoZoom = false;
+    [HideInInspector]
+    public GameManager gm;
 
     private void OnValidate()
     {
-        AdjustCameraRotation(new Vector2(0.0f, 0.0f));
         UpdateGUIScreenSpace();
+
+        if (minZoom > cameraDistance)
+        {
+            minZoom = cameraDistance;
+        }
+
+        zoomTransition = Mathf.Clamp(zoomTransition, minZoom, maxZoom);
+    }
+
+    private void Awake()
+    {
+        playerCState = new C_PlayerCamera(this);
     }
 
     // Use this for initialization
     void Start () {
         // Caching
 		gm = GameManager.GetInstance();
-        dynamicMovementDamp = cameraMovementDamp;
-        dynamicRotationDamp = cameraRotationDamp;
+
+        currentState = playerCState;
 
     }
 
     private void Update()
     {
-        UpdateInput();
+        // DEBUG: Notifies you if state has changed
+        if (previousState != null && previousState != currentState)
+        {
+            Debug.Log("State changed! " + previousState + " -> " + currentState);
+
+            // Activates start state
+            currentState.StartState();
+        }
+
+        // Update current state
+        currentState.UpdateState();
+
+        // Update previous state
+        previousState = currentState;
     }
 
     // Update is called once per frame
-    void LateUpdate () {
-
-        subjectsInFocus = UpdateSubjectsInFocus();
-
-        Vector3 targetPosition = SolveTargetPosition();
-
-        // SmoothDamp rig position
-        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref mainCameraV, dynamicMovementDamp);
-
-        // SmoothDamp camera position
-        mainCamera.transform.localPosition = Vector3.SmoothDamp(mainCamera.transform.localPosition, CalculateCameraPosition(Vector3.zero), ref rigV, dynamicRotationDamp);
-
-        // SmoothDamp target position
-        cameraAim.position = Vector3.SmoothDamp(cameraAim.position, targetPosition, ref cameraAimV, dynamicMovementDamp);
-
-        // SmoothDamp rig rotation
-        Vector3 rigEulerAngle = transform.eulerAngles;
-        rigEulerAngle.y = Mathf.SmoothDampAngle(rigEulerAngle.y, cameraAngleRotation, ref rigRotationV, dynamicRotationDamp);
-        transform.eulerAngles = rigEulerAngle;
-
-        // Aim camera at smooth target
-        mainCamera.transform.LookAt(cameraAim);
+    void LateUpdate () 
+    {
+        currentState.LateUpdateState();
 
         // Sync main camera positon and rotation to GUICamera
         guiCamera.transform.position = mainCamera.transform.position;
@@ -90,151 +94,28 @@ public class CameraManager : MonoBehaviour {
         UpdateGUIScreenSpace();
 	}
 
-    /// <summary>
-    /// 
-    /// </summary>
-    private void OnDrawGizmosSelected()
+    public Transform[] UpdateSubjectsInFocus()
     {
-        if (!showDebug) return;
-        if (!Application.isPlaying) return;
-
-        // Camera to target smooth
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(mainCamera.transform.position, cameraAim.position);
-        Gizmos.DrawCube(cameraAim.position,new Vector3(0.1f, 0.1f, 0.1f));
-
-        // Camera to target target positions
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(CalculateCameraPosition(SolveTargetPosition()), SolveTargetPosition());
-        Gizmos.DrawCube(SolveTargetPosition(), new Vector3(0.1f, 0.1f, 0.1f));
-        Gizmos.DrawCube(CalculateCameraPosition(SolveTargetPosition()), new Vector3(0.1f, 0.1f, 0.1f));
-
-        // Target visuals
-        Gizmos.color = Color.blue;
-        if (subjectsInFocus.Length == 1)
-        {
-            Gizmos.DrawCube(subjectsInFocus[0].position,new Vector3(0.1f, 0.1f, 0.1f));
-        }
-        else if (subjectsInFocus.Length == 2)
-        {
-            Transform sub1 = subjectsInFocus[0];
-            Transform sub2 = subjectsInFocus[1];
-
-            Gizmos.DrawLine(sub1.position, sub2.position);
-            Gizmos.DrawCube(sub1.position,new Vector3(0.1f, 0.1f, 0.1f));
-            Gizmos.DrawCube(sub2.position,new Vector3(0.1f, 0.1f, 0.1f));
-        }
-        else if (subjectsInFocus.Length >= 3)
-        {
-            Gizmos.DrawWireCube(tempBounds.center, tempBounds.size);
-            for (int i = 0; i < subjectsInFocus.Length; i++)
-            {
-                Gizmos.DrawCube(subjectsInFocus[i].position,new Vector3(0.1f, 0.1f, 0.1f));
-            }
-        }
-        
-        
-    }
-
-    /// <summary>
-    /// Update input interactions
-    /// </summary>
-    void UpdateInput()
-    {
-        //////////////////////////////////////////////////////////////////////////
-        /// Keyboard and Mouse
-        /// 
-
-        /************************************************************************/
-        /* Camera Rotation                                                      */
-        /************************************************************************/
-
-        if (Input.GetButton("Fire2"))
-        {
-            if (Input.GetAxis("Mouse X") != 0.0f)
-            {
-                AdjustCameraRotation(new Vector2(Input.GetAxis("Mouse X"), 0.0f));
-            }
-
-            if (Input.GetAxis("Mouse Y") != 0.0f)
-            {
-                AdjustCameraRotation(new Vector2(0.0f, Input.GetAxis("Mouse Y")));
-            }
-        }
-
-        /************************************************************************/
-        /* Camera Zoom                                                          */
-        /************************************************************************/
-
-        if (Input.GetAxis("Mouse ScrollWheel") != 0.0f)
-            AdjustCameraZoom(Input.GetAxis("Mouse ScrollWheel"));
-
-        //////////////////////////////////////////////////////////////////////////
-        /// Controller
-        /// 
-
-            /************************************************************************/
-            /* Camera Rotation                                                      */
-            /************************************************************************/
-
-        if (Input.GetAxis("Player1_RightStickX") != 0.0f)
-        {
-            AdjustCameraRotation(new Vector2(Input.GetAxis("Player1_RightStickX"), 0.0f));
-        }
-
-        if (Input.GetAxis("Player1_RightStickY") != 0.0f)
-        {
-            AdjustCameraRotation(new Vector2(0.0f, Input.GetAxis("Player1_RightStickY")));
-        }
-    }
-
-    void AdjustCameraRotation(Vector2 _adjustment)
-    {
-        cameraAngleRotation += _adjustment.x;
-        cameraAngleHeight = Mathf.Clamp(cameraAngleHeight - _adjustment.y, 0.0f, 90.0f);
-
-        float fastestMovement = 1.0f;
-
-        if (_adjustment.x > fastestMovement)
-        {
-            dynamicMovementDamp = 0.1f;
-        }
-        else
-        {
-            dynamicMovementDamp = cameraMovementDamp;
-        }
-
-        if (_adjustment.y > fastestMovement)
-        {
-            dynamicRotationDamp = 0.1f;
-        }
-        else
-        {
-            dynamicRotationDamp = cameraRotationDamp;
-        }
-
-        if (cameraAngleRotation > 360.0f)
-        {
-            cameraAngleRotation = 0.0f;
-        }
-        else if (cameraAngleRotation < 0.0f)
-        {
-            cameraAngleRotation = 360.0f;
-        }
-    }
-
-    void AdjustCameraZoom(float _adjustment)
-    {
-        cameraDistance = Mathf.Clamp(cameraDistance - _adjustment, 0.1f, 100.0f);
-    }
-
-    Transform[] UpdateSubjectsInFocus()
-    {
-        if (gm.GetAllSubjectCount() <= 2)
+        // Single subject
+        if (gm.GetAllSubjectCount() == 1)
         {
             return gm.GetAllSubjects();
         }
 
+        // 2 subjects
+        if (gm.GetAllSubjectCount() == 2)
+        {
+            if (Vector3.Distance(gm.GetAllSubjects()[0].position, gm.GetAllSubjects()[1].position) > focusThreshold)
+            {
+                return new Transform[]{gm.GetMainSubject() };
+            }
+            else
+            {
+                return gm.GetAllSubjects();
+            }
+        }
+
+        // More than 2 subjects
         List<Transform> result = new List<Transform>();
 
         for (int s = 0; s < gm.GetAllSubjectCount(); s++)
@@ -258,132 +139,16 @@ public class CameraManager : MonoBehaviour {
             {
                 result.Add(currentTrans);
             }
+            else if (currentTrans == gm.GetMainSubject())
+            {
+                return new Transform[]{ currentTrans};
+            }
         }
 
         return result.ToArray();
     }
 
-    Vector3 SolveTargetPosition()
-    {
-
-        if (tempBounds != null)
-        {
-            tempBounds.center = Vector3.zero;
-            tempBounds.size = Vector3.zero;
-        }
-
-        // Solving for singular target
-        if (subjectsInFocus.Length == 1)
-        {
-            // Disable auto zoom
-            autoZoom = false;
-
-            return subjectsInFocus[0].position + targetOffset;
-        }
-
-        // Solving for dual targets
-        else if (subjectsInFocus.Length == 2)
-        {
-            // Enable auto zoom
-            autoZoom = true;
-
-            // Calculate middle position
-            Vector3 midPoint = Vector3.Lerp(subjectsInFocus[0].position, subjectsInFocus[1].position, Mathf.Clamp01(cameraDistance / 10.0f) * 0.5f);
-
-            return midPoint + targetOffset;
-        }
-
-        // Solving for multiple targets
-        else if (subjectsInFocus.Length >= 3)
-        {
-            // Enable auto zoom
-            autoZoom = true;
-
-            tempBounds = new Bounds(subjectsInFocus[0].position, Vector3.zero);
-
-            for (int i = 1; i < subjectsInFocus.Length; i++)
-            {
-                tempBounds.Encapsulate(subjectsInFocus[i].position);
-            }
-
-            // Set micro zoom
-            Vector3 midPoint = Vector3.Lerp(subjectsInFocus[0].position, (tempBounds.center + targetOffset), Mathf.Clamp01(cameraDistance / 10.0f) * 0.5f);
-
-            return midPoint;
-        }
-
-        return Vector3.zero;
-    }
-
-    Vector3 CalculateCameraPosition(Vector3 target)
-    {
-        // Calculate hypotenuse
-        float hyp = cameraDistance;
-
-        // Picking the lowest FOV (height vs width) according to the screen resolution
-        // Lowest FOV wins
-        float lowestFOV = 0.0f;
-        
-        if (Camera.main.fieldOfView < CalculateFOVHeightFromFOVWidth(Camera.main.fieldOfView) * 0.5f)
-        {
-            lowestFOV = Camera.main.fieldOfView;
-        }
-        else
-        {
-            lowestFOV = CalculateFOVHeightFromFOVWidth(Camera.main.fieldOfView) * 0.5f;
-        }
-
-        // Only for multi subject situations
-        if (autoZoom)
-        {
-            // Calculate zoom to accommodate 2 subjects
-            if (subjectsInFocus.Length == 2)
-            {
-                // Distance between both subjects
-                float distBetween = Vector3.Distance(subjectsInFocus[0].position, subjectsInFocus[1].position) + zoomPadding;
-
-                hyp = (distBetween * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
-            }
-
-            // Calculate zoom to accommodate more than 2 subjects
-            else
-            {
-                if (tempBounds != null)
-                {
-                    float maxDistance = Vector3.Distance(tempBounds.center, tempBounds.max) * 2 + zoomPadding;
-
-                    hyp = (maxDistance * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
-                }
-            }
-        }
-
-        // Active zoom
-        if (cameraDistance < 10.0f)
-        {
-            // Zoom all the way
-            hyp = hyp * (cameraDistance / 10.0f);
-        }
-        else
-        {
-            hyp += cameraDistance;
-        }
-
-        // Calculate adjacent
-        float adj = hyp * Mathf.Cos(cameraAngleHeight * Mathf.Deg2Rad);
-
-        // Calculate opposite
-        float opp = Mathf.Sqrt(Mathf.Pow(hyp, 2) - Mathf.Pow(adj, 2));
-
-        // Solving camera position
-        Vector3 newPosition = target;
-
-        newPosition.y += opp;
-        newPosition.z -= adj;
-
-        return newPosition;
-    }
-
-    float CalculateFOVHeightFromFOVWidth(float fovWidth)
+    public float CalculateFOVHeightFromFOVWidth(float fovWidth)
     {
         
         // Calculate adjacent
@@ -394,7 +159,7 @@ public class CameraManager : MonoBehaviour {
         return fovHeight;
     }
 
-    Vector2 GetScreenResolution()
+    public Vector2 GetScreenResolution()
     {
         return new Vector2(Screen.width, Screen.height);
     }

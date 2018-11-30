@@ -139,6 +139,11 @@ public class GameManager : MonoBehaviour {
         return tempArray;
     }
 
+    public Transform GetMainSubject()
+    {
+        return mainSubject;
+    }
+
     public int GetAllSubjectCount()
     {
         if (mainSubject)
@@ -175,6 +180,8 @@ public class GameManager : MonoBehaviour {
     public void WinState()
     {
         if (isWon) return;
+
+        Debug.Log("Player won!");
     }
 
     public void LoseState()
@@ -182,6 +189,6 @@ public class GameManager : MonoBehaviour {
         if (isLost) return;
         // TODO: Make a lost state
 
-        Debug.Log("Player won!");
+        Debug.Log("Player lost!");
     }
 }

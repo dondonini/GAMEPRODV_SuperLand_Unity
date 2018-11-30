@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movementSpeed: 1000
   movementDrag: 2
-  jumpForce: 250
+  jumpForce: 350
   groundDistance: 0.1
   dashDistance: 2
   buttonCooldown: 0.5

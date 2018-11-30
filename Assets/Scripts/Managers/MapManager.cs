@@ -98,7 +98,7 @@ public class MapManager : MonoBehaviour {
             MapSegmentData currentData = mapSegments[seg];
 
             // Check if segment is still alive
-            // and remove it is dead
+            // and remove it if dead
             if (currentData.tran == null)
             {                     
                 mapSegments.Remove(currentData);
@@ -111,8 +111,18 @@ public class MapManager : MonoBehaviour {
             {
                 Transform currentInstance = gameManager.GetAllSubjects()[inst];
 
+                SubjectData foundSubjectData = currentInstance.GetComponent<SubjectData>();
+
                 // Check if segment is in instance's radius
                 float distanceSqr = (currentInstance.position - currentData.move.GetRootPosition()).sqrMagnitude;
+
+                if (foundSubjectData)
+                {
+                    if (distanceSqr < foundSubjectData.viewingRadius)
+                    {
+                        result = true;
+                    }
+                }
 
                 if (distanceSqr < currentData.viewingRadius)
                 {

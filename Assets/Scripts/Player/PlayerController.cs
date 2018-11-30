@@ -37,6 +37,7 @@ public class PlayerController : MonoBehaviour {
     /* Runtime Variables                                                    */
     /************************************************************************/
 
+    bool isDoubleJumped = false;
     Vector3 playerVelocity;
     bool isGrounded;
     [SerializeField]
@@ -52,6 +53,16 @@ public class PlayerController : MonoBehaviour {
 	void Update ()
     {
         isGrounded = IsGrounded();
+
+        if (isDoubleJumped && isGrounded)
+        {
+            isDoubleJumped = false;
+        }
+
+        if (!isGrounded && !Input.GetButton("Jump"))
+        {
+            rb.AddForce(new Vector3(0.0f, -10f, 0.0f));
+        }
 
         UpdateInput();
     }
@@ -92,6 +103,15 @@ public class PlayerController : MonoBehaviour {
         ////////////////////////////////////////////////////////////////////////// Jump
         if(Input.GetButtonDown("Jump") && isGrounded)
             JumpPlayer();
+        else if (Input.GetButtonDown("Jump") && !isDoubleJumped)
+        {
+            Vector3 vel = rb.velocity;
+            vel.y = 0.0f;
+            rb.velocity = vel;
+
+            JumpPlayer();
+            isDoubleJumped = true;
+        }
 
         ////////////////////////////////////////////////////////////////////////// Dash
         if (Input.GetButtonDown("Dash"))

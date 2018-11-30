@@ -17,6 +17,10 @@ public class MapMovement : MonoBehaviour {
     [SerializeField]
     Vector3 targetPosition;
 
+    [Header("Attachments")]
+    [SerializeField]
+    Transform[] attachedGameObjects;
+
     [Header("Animation Properties")]
     [SerializeField]
     float tweenInDuraction = 1.0f;
@@ -50,6 +54,9 @@ public class MapMovement : MonoBehaviour {
 
         // Grab resources
         gameManager = GameManager.GetInstance();
+
+        // Attach gameobjects to segment
+        AttachGameObjects();
 
         // Setting default variables
         rootPosition = transform.position;
@@ -93,6 +100,14 @@ public class MapMovement : MonoBehaviour {
         }
     }
 
+    void AttachGameObjects()
+    {
+        for (int a = 0; a < attachedGameObjects.Length; a++)
+        {
+            attachedGameObjects[a].SetParent(transform);
+        }
+    }
+
     void EnableSegment()
     {
         targetPosition = rootPosition;
@@ -113,6 +128,9 @@ public class MapMovement : MonoBehaviour {
 
                     // Remove from public subject list
                     gameManager.RemoveSubject(transform.GetChild(c).transform);
+
+                    // Deactivate subject
+                    transform.GetChild(c).gameObject.SetActive(false);
                 }
             }
         }
@@ -127,7 +145,13 @@ public class MapMovement : MonoBehaviour {
         {
             for (int i = 0; i < subjectChildren.Count; i++)
             {
+                // Activate subject
+                subjectChildren[i].gameObject.SetActive(true);
+                
+                // Add subject into global subject list
                 gameManager.AddSubject(subjectChildren[i]);
+
+                // Remove from cache
                 subjectChildren.RemoveAt(i);
             }
         }

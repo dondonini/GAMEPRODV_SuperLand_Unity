@@ -43,7 +43,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 17.777779, y: 10, z: 50}
+  m_Size: {x: 17.782656, y: 10, z: 50}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &70324082370416513
 MonoBehaviour:
@@ -94,7 +94,7 @@ Transform:
   m_Children:
   - {fileID: 4653828640857355610}
   m_Father: {fileID: 6978952350998074381}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &2006654097283604001
 Camera:
@@ -118,7 +118,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0
   far clip plane: 50
   field of view: 60
   orthographic: 1
@@ -248,7 +248,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6978952350998074381}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &6978952350801798788
 Camera:
@@ -423,8 +423,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 6978952350801798791}
   - {fileID: 8153598973709764759}
+  - {fileID: 6978952350801798791}
   - {fileID: 6978952351124194713}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -442,13 +442,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraDistance: 10
+  minZoom: 2
+  maxZoom: 100
+  zoomTransition: 10
   cameraAngleHeight: 30
   cameraAngleRotation: 270
-  cameraMovementDamp: 1
+  cameraMovementDamp: 0.5
   cameraRotationDamp: 0.2
   targetOffset: {x: 0, y: 1, z: 0}
   zoomPadding: 20
-  focusThreshold: 30
+  focusThreshold: 20
   mainCamera: {fileID: 6978952350801798788}
   guiCamera: {fileID: 2006654097283604001}
   cameraAim: {fileID: 6978952351124194713}
