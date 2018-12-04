@@ -35,8 +35,6 @@ public class MapManager : MonoBehaviour {
     {
         public MapMovement move;
         public Transform tran;
-        public float viewingRadius;
-
     }
 
     /************************************************************************/
@@ -72,13 +70,6 @@ public class MapManager : MonoBehaviour {
                 tran = mapSeg.transform,
             };
 
-            MapData findMapData = mapSeg.GetComponent<MapData>();
-
-            if (findMapData != null)
-                newData.viewingRadius = findMapData.viewingRadius;
-            else
-                newData.viewingRadius = gameManager.defaultViewableRadius;
-
             mapSegments.Add(newData);
         }
         Debug.Log("Segments found: " + mapSegments.Count);
@@ -92,7 +83,6 @@ public class MapManager : MonoBehaviour {
 
     void UpdateMap()
     {
-
         for (int seg = 0; seg < mapSegments.Count; seg++)
         {
             MapSegmentData currentData = mapSegments[seg];
@@ -113,18 +103,14 @@ public class MapManager : MonoBehaviour {
 
                 SubjectData foundSubjectData = currentInstance.GetComponent<SubjectData>();
 
-                // Check if segment is in instance's radius
-                float distanceSqr = (currentInstance.position - currentData.move.GetRootPosition()).sqrMagnitude;
+                float distanceSqr = Vector3.Distance(currentInstance.position, currentData.move.GetRootPosition());
 
-                if (foundSubjectData)
+                // Check if valid distance to spawn
+                if (foundSubjectData && distanceSqr < foundSubjectData.viewingRadius)
                 {
-                    if (distanceSqr < foundSubjectData.viewingRadius)
-                    {
-                        result = true;
-                    }
+                    result = true;
                 }
-
-                if (distanceSqr < currentData.viewingRadius)
+                else if (!foundSubjectData && distanceSqr < gameManager.defaultViewableRadius)
                 {
                     result = true;
                 }

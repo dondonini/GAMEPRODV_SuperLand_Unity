@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4454255503004626}
   - component: {fileID: 114964039757176802}
-  - component: {fileID: 114023443272490692}
+  - component: {fileID: 3907447253343990675}
   - component: {fileID: 8266793552636650368}
   - component: {fileID: 3356344970497625166}
   - component: {fileID: 8319762962191916073}
@@ -55,7 +55,7 @@ MonoBehaviour:
   dashDistance: 2
   buttonCooldown: 0.5
   currentCamera: {fileID: 0}
---- !u!114 &114023443272490692
+--- !u!114 &3907447253343990675
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -64,10 +64,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1692955520941754}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 099749f76dcb11f4c9465bdd8d03027b, type: 3}
+  m_Script: {fileID: 11500000, guid: 6074658e11d8f3d49aacc03a479a19be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewingRadius: 50
+  viewingRadius: 10
 --- !u!33 &8266793552636650368
 MeshFilter:
   m_ObjectHideFlags: 0

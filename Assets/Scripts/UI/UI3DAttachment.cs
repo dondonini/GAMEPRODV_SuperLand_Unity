@@ -16,14 +16,26 @@ public class UI3DAttachment : MonoBehaviour
     [HideInInspector]
     public RectTransform rectTransform;
 
+    Rect screenRect;
+
     // Start is called before the first frame update
     void Start()
     {
+        screenRect = new Rect(0,0, Screen.width, Screen.height);
+
         // Refer RectTransform
         rectTransform = GetComponent<RectTransform>();
 
         // Remove placeholder image
         Destroy(GetComponent<Image>());
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // Rect on screen
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireCube(rectTransform.position, new Vector3(rectTransform.rect.width, rectTransform.rect.height, 0.1f));
+
     }
 
     public void Attach3DUIObject()
@@ -47,14 +59,27 @@ public class UI3DAttachment : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Set3DUIPosition(rectTransform.position);
-        Debug.Log(rectTransform.position);
+        // Allocate screen rect
+        screenRect = new Rect(0,0, Screen.width, Screen.height);
 
-        float xScale = rectTransform.rect.width / 100.0f;
-        float yScale = rectTransform.rect.height / 100.0f;
-        float scaleAmount = Mathf.Min(xScale, yScale);
+        if (rectTransform.rect.Overlaps(screenRect))
+        {
+            model.GetComponent<MeshRenderer>().enabled = true;
 
-        Set3DUIScale(scaleAmount);
+            Set3DUIPosition(rectTransform.position);
+
+            float xScale = rectTransform.rect.width / 50.0f;
+            float yScale = rectTransform.rect.height / 50.0f;
+            float scaleAmount = Mathf.Min(xScale, yScale);
+
+            Set3DUIScale(scaleAmount);
+        }
+        else
+        {
+            model.GetComponent<MeshRenderer>().enabled = false;
+        }
+
+        
     }
 
     public void Set3DUIPosition(Vector2 _pos)
@@ -69,13 +94,11 @@ public class UI3DAttachment : MonoBehaviour
 
     Vector3 ScreenPointTo3DScreenPosition(Vector2 _screenPoint)
     {
-        Vector2 currentResolution = new Vector2(Screen.width, Screen.height);
-        
         // Calculate X position percentage relative to the left of the screen
-        float xPer = _screenPoint.x / currentResolution.x;
+        float xPer = _screenPoint.x / screenRect.width;
 
         // Calculate Y position percentage relative to the top of the screen
-        float yPer = _screenPoint.y / currentResolution.y;
+        float yPer = _screenPoint.y / screenRect.height;
 
         float xPos = Mathf.LerpUnclamped(0.0f, Get3DUISize().x, xPer) - (Get3DUISize().x * 0.5f);
         float yPos = Mathf.LerpUnclamped(0.0f, Get3DUISize().y, yPer) - (Get3DUISize().y * 0.5f);

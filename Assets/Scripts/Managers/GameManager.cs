@@ -44,6 +44,8 @@ public class GameManager : MonoBehaviour {
     [SerializeField]
     private List<Transform> subjects;
 
+    [Header("Points")]
+
     [SerializeField]
     private int localCoins = 0;
 
@@ -176,6 +178,40 @@ public class GameManager : MonoBehaviour {
             }
         }
     }
+
+    /************************************************************************/
+    /* Scoring                                                              */
+    /************************************************************************/
+
+    public void AddCoins(int _coins)
+    {
+        localCoins += _coins;
+    }
+
+    public void AddCoin()
+    {
+        localCoins++;
+    }
+
+    public void AddStars(int _stars)
+    {
+        localStars += _stars;
+    }
+
+    public void AddStar()
+    {
+        localStars++;
+    }
+
+    public void UploadData()
+    {
+        PlayerData.masterStars = localStars;
+        PlayerData.coins = localCoins;
+    }
+
+    /************************************************************************/
+    /* States                                                               */
+    /************************************************************************/
 
     public void WinState()
     {

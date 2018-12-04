@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 1576090587881635512}
   - component: {fileID: 1576090587883888762}
   - component: {fileID: 1576090587883888763}
-  - component: {fileID: 966607584}
   m_Layer: 11
   m_Name: Master Star
   m_TagString: Pickup
@@ -108,15 +107,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotateSpeed: {x: 0, y: 100, z: 0}
   target: {fileID: 0}
---- !u!114 &966607584
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1576090587883888760}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a8b5ee9b0822ea47bfba7ad1408a490, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
