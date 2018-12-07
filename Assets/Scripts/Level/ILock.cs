@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface EnemyStates_SMT : EnemyStates_SM
+public interface ILock
 {
-    
+    void UnlockLand(string _syncKey);
 }

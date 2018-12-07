@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   segmentMesh: {fileID: 5073564158941072019}
-  topOffset: -0.075
+  topOffset: -0.1
 --- !u!1001 &5077938558084797961
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22,17 +22,21 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 5073564158941072019}
-      propertyPath: m_LocalPosition.y
-      value: -25.0375
-      objectReference: {fileID: 0}
-    - target: {fileID: 5073564158941072019}
-      propertyPath: m_LocalScale.z
-      value: 99.85
-      objectReference: {fileID: 0}
-    - target: {fileID: 5073564158941072019}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5073564158941072019}
+      propertyPath: m_LocalPosition.y
+      value: -25.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073564158941072019}
+      propertyPath: m_LocalScale.z
+      value: 99.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5183532236600500799}
+      propertyPath: thisCollider
+      value: 
+      objectReference: {fileID: 5087963139459960203}
     - target: {fileID: 5073383921252596793}
       propertyPath: m_LocalPosition.x
       value: -3.4641
@@ -43,7 +47,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5079111908320137365}
       propertyPath: m_Name
-      value: LavaSegment Variant
+      value: LavaSegment
       objectReference: {fileID: 0}
     - target: {fileID: 5056278449891109225}
       propertyPath: m_Materials.Array.data[0]
@@ -53,6 +57,30 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 007c45e96ecf02d48a239c8baac1a35b, type: 2}
+    - target: {fileID: 5056278449891109225}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 007c45e96ecf02d48a239c8baac1a35b, type: 2}
+    - target: {fileID: 5056278449891109225}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 007c45e96ecf02d48a239c8baac1a35b, type: 2}
+    - target: {fileID: 5073383921252596793}
+      propertyPath: m_LocalPosition.x
+      value: -3.4641
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073383921252596793}
+      propertyPath: m_LocalPosition.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073383921252596793}
+      propertyPath: m_LocalPosition.x
+      value: -3.4641
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073383921252596793}
+      propertyPath: m_LocalPosition.z
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 5073383921252596793}
       propertyPath: m_LocalPosition.x
       value: -3.4641
@@ -98,6 +126,30 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5073564158941072019}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073564158941072019}
+      propertyPath: m_LocalPosition.y
+      value: -25.0375
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073564158941072019}
+      propertyPath: m_LocalScale.z
+      value: 99.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073564158941072019}
+      propertyPath: m_LocalPosition.y
+      value: -25.0375
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073564158941072019}
+      propertyPath: m_LocalScale.z
+      value: 99.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073564158941072019}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5073564158941072019}
       propertyPath: m_LocalScale.z
       value: 0.3
       objectReference: {fileID: 0}
@@ -107,20 +159,37 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5079111908320137365}
       propertyPath: m_Name
+      value: LavaSegment
+      objectReference: {fileID: 0}
+    - target: {fileID: 5079111908320137365}
+      propertyPath: m_Name
       value: LavaSegment Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 5079111908320137365}
+      propertyPath: m_Name
+      value: LavaSegment Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 5183532236600500799}
+      propertyPath: thisCollider
+      value: 
+      objectReference: {fileID: 5087963139459960203}
     - target: {fileID: 4676834301140122, guid: 5a32e0a18cd2d4541834f80fcfca4cf4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4676834301140122, guid: 5a32e0a18cd2d4541834f80fcfca4cf4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -25.0375
+      value: -25.05
       objectReference: {fileID: 0}
     - target: {fileID: 4676834301140122, guid: 5a32e0a18cd2d4541834f80fcfca4cf4, type: 3}
       propertyPath: m_LocalScale.z
-      value: 99.85
+      value: 99.8
       objectReference: {fileID: 0}
+    - target: {fileID: 114821096904897590, guid: 5a32e0a18cd2d4541834f80fcfca4cf4,
+        type: 3}
+      propertyPath: thisCollider
+      value: 
+      objectReference: {fileID: 5087963139459960203}
     - target: {fileID: 4558562501536304, guid: 5a32e0a18cd2d4541834f80fcfca4cf4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.4641
@@ -131,7 +200,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1362742187886236, guid: 5a32e0a18cd2d4541834f80fcfca4cf4, type: 3}
       propertyPath: m_Name
-      value: LavaSegment Variant
+      value: LavaSegment
       objectReference: {fileID: 0}
     - target: {fileID: 23630991983624032, guid: 5a32e0a18cd2d4541834f80fcfca4cf4,
         type: 3}
@@ -152,6 +221,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 5077938558084797961}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5183532236600500799 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114821096904897590, guid: 5a32e0a18cd2d4541834f80fcfca4cf4,
+    type: 3}
+  m_PrefabInstance: {fileID: 5077938558084797961}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5079111908320137365}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45a98bae9a19c424cb9fda8da1a4688c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &5073564158941072019 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4676834301140122, guid: 5a32e0a18cd2d4541834f80fcfca4cf4,
@@ -161,6 +242,12 @@ Transform:
 --- !u!23 &5056278449891109225 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 23630991983624032, guid: 5a32e0a18cd2d4541834f80fcfca4cf4,
+    type: 3}
+  m_PrefabInstance: {fileID: 5077938558084797961}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &5087963139459960203 stripped
+MeshCollider:
+  m_CorrespondingSourceObject: {fileID: 64288111146670978, guid: 5a32e0a18cd2d4541834f80fcfca4cf4,
     type: 3}
   m_PrefabInstance: {fileID: 5077938558084797961}
   m_PrefabAsset: {fileID: 0}

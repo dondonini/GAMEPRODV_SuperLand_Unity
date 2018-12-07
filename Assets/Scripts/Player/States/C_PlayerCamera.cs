@@ -219,19 +219,19 @@ public class C_PlayerCamera : CameraStates_SM
         // Single subject
         if (manager.gm.GetAllSubjectCount() == 1)
         {
-            return manager.gm.GetAllSubjects();
+            return manager.gm.allSubjects;
         }
 
         // 2 subjects
         if (manager.gm.GetAllSubjectCount() == 2)
         {
-            if (Vector3.Distance(manager.gm.GetAllSubjects()[0].position, manager.gm.GetAllSubjects()[1].position) > manager.focusThreshold)
+            if (Vector3.Distance(manager.gm.allSubjects[0].position, manager.gm.allSubjects[1].position) > manager.focusThreshold)
             {
                 return new Transform[] { manager.gm.GetMainSubject() };
             }
             else
             {
-                return manager.gm.GetAllSubjects();
+                return manager.gm.allSubjects;
             }
         }
 
@@ -241,14 +241,14 @@ public class C_PlayerCamera : CameraStates_SM
         for (int s = 0; s < manager.gm.GetAllSubjectCount(); s++)
         {
             float totalDistance = 0;
-            Transform currentTrans = manager.gm.GetAllSubjects()[s];
+            Transform currentTrans = manager.gm.allSubjects[s];
 
             for (int other = 0; other < manager.gm.GetAllSubjectCount(); other++)
             {
-                if (currentTrans == manager.gm.GetAllSubjects()[other])
+                if (currentTrans == manager.gm.allSubjects[other])
                     continue;
 
-                float distanceFrom = Vector3.Distance(currentTrans.position, manager.gm.GetAllSubjects()[other].position);
+                float distanceFrom = Vector3.Distance(currentTrans.position, manager.gm.allSubjects[other].position);
 
                 totalDistance += distanceFrom;
             }
@@ -270,13 +270,6 @@ public class C_PlayerCamera : CameraStates_SM
 
     Vector3 SolveTargetPosition()
     {
-
-        if (tempBounds != null)
-        {
-            tempBounds.center = Vector3.zero;
-            tempBounds.size = Vector3.zero;
-        }
-
         // Solving for singular target
         if (subjectsInFocus.Length == 1)
         {
@@ -353,12 +346,9 @@ public class C_PlayerCamera : CameraStates_SM
             // Calculate zoom to accommodate more than 2 subjects
             else
             {
-                if (tempBounds != null)
-                {
-                    float maxDistance = Vector3.Distance(tempBounds.center, tempBounds.max) * 2 + manager.zoomPadding;
+                float maxDistance = Vector3.Distance(tempBounds.center, tempBounds.max) * 2 + manager.zoomPadding;
 
-                    hyp = (maxDistance * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
-                }
+                hyp = (maxDistance * 0.5f) * Mathf.Tan(lowestFOV * Mathf.Deg2Rad);
             }
         }
 

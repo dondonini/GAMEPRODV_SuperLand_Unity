@@ -27,17 +27,35 @@ public class AT_PatrolState : EnemyStates_SM
     public void UpdateState()
     {
         // Rotate
-        if (isGoingClockwise && stateMachine.rotationVelocity < stateMachine.maxMovementSpeed)
+        if (isGoingClockwise)
         {
             stateMachine.rotationVelocity = stateMachine.rotationVelocity + stateMachine.movementAcceleration * Time.deltaTime;
         }
-        else if (!isGoingClockwise && stateMachine.rotationVelocity < -stateMachine.maxMovementSpeed)
+        else //(!isGoingClockwise && stateMachine.rotationVelocity < -stateMachine.maxMovementSpeed)
         {
             stateMachine.rotationVelocity = stateMachine.rotationVelocity - stateMachine.movementAcceleration * Time.deltaTime;
         }
 
+        stateMachine.rotationVelocity = Mathf.Clamp(stateMachine.rotationVelocity, -stateMachine.maxMovementSpeed, stateMachine.maxMovementSpeed);
+
         // Apply rotation to body
-        stateMachine.rotationBody.Rotate(new Vector3(0.0f, stateMachine.rotationVelocity * Time.deltaTime, 0.0f));
+        stateMachine.rotationBody.Rotate(new Vector3(0.0f, stateMachine.rotationVelocity, 0.0f));
+
+        CheckTargetIsInFOV();
+    }
+
+    void CheckTargetIsInFOV()
+    {
+        if (!stateMachine.IsTargetInRange()) return;
+
+        Vector3 targetDir = stateMachine.GetTargetDirection();
+        float angleToTarget = Vector3.Angle(targetDir, stateMachine.rotationBody.forward);
+
+        // Check if target is in FOV
+        if (angleToTarget <= stateMachine.turrentLookFOV * 0.5f && angleToTarget >= -stateMachine.turrentLookFOV * 0.5f)
+        {
+            ToChaseState();
+        }
     }
 
     // Transitions
@@ -45,7 +63,7 @@ public class AT_PatrolState : EnemyStates_SM
 
     public void ToPatrolState()
     {
-        // Cannot transition to self
+        Debug.LogError("You cannot transition to current state!");
     }
 
     public void ToAttackState()
@@ -55,7 +73,12 @@ public class AT_PatrolState : EnemyStates_SM
 
     public void ToChaseState()
     {
+        stateMachine.currentState = stateMachine.chaseState;
+    }
 
+    public void ToDeathState()
+    {
+        throw new System.NotImplementedException();
     }
 
     public void ToWanderState()

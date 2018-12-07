@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Land
   - Pickup
+  - Enemies
   layers:
   - Default
   - TransparentFX

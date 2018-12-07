@@ -17,6 +17,9 @@ public class PlayerController : MonoBehaviour {
     [SerializeField]
     float jumpForce = 5.0f;
 
+    [SerializeField][Tooltip("The downward force applied when jump is released")]
+    float fallForce = 20.0f;
+
     [SerializeField]
     float groundDistance = 1.0f;
 
@@ -61,7 +64,7 @@ public class PlayerController : MonoBehaviour {
 
         if (!isGrounded && !Input.GetButton("Jump"))
         {
-            rb.AddForce(new Vector3(0.0f, -10f, 0.0f));
+            rb.AddForce(new Vector3(0.0f, -fallForce, 0.0f));
         }
 
         UpdateInput();

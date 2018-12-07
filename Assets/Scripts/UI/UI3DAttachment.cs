@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+[ExecuteInEditMode]
 [RequireComponent(typeof(RectTransform))]
 public class UI3DAttachment : MonoBehaviour
 {
@@ -27,7 +28,8 @@ public class UI3DAttachment : MonoBehaviour
         rectTransform = GetComponent<RectTransform>();
 
         // Remove placeholder image
-        Destroy(GetComponent<Image>());
+        if (Application.isPlaying)
+            Destroy(GetComponent<Image>());
     }
 
     private void OnDrawGizmosSelected()
@@ -68,8 +70,8 @@ public class UI3DAttachment : MonoBehaviour
 
             Set3DUIPosition(rectTransform.position);
 
-            float xScale = rectTransform.rect.width / 50.0f;
-            float yScale = rectTransform.rect.height / 50.0f;
+            float xScale = rectTransform.rect.width / 100.0f;
+            float yScale = rectTransform.rect.height / 100.0f;
             float scaleAmount = Mathf.Min(xScale, yScale);
 
             Set3DUIScale(scaleAmount);

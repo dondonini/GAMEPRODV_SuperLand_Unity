@@ -16,6 +16,8 @@ public interface EnemyStates_SM
 
     void ToWanderState();
 
+    void ToDeathState();
+
     void OnTriggerEnter(Collider other);
 
     void OnTriggerExit(Collider other);

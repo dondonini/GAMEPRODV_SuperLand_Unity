@@ -89,7 +89,7 @@ public class MapManager : MonoBehaviour {
 
             // Check if segment is still alive
             // and remove it if dead
-            if (currentData.tran == null)
+            if (currentData.tran == null || currentData.move.IsIgnored())
             {                     
                 mapSegments.Remove(currentData);
                 continue;
@@ -99,7 +99,14 @@ public class MapManager : MonoBehaviour {
 
             for (int inst = 0; inst < gameManager.GetAllSubjectCount(); inst++)
             {
-                Transform currentInstance = gameManager.GetAllSubjects()[inst];
+                Transform currentInstance = gameManager.allSubjects[inst];
+
+                // Dead link found! Remove from subject list
+                if (!currentInstance)
+                {
+                    gameManager.RemoveSubject (currentInstance);
+                    continue;
+                }
 
                 SubjectData foundSubjectData = currentInstance.GetComponent<SubjectData>();
 
@@ -123,6 +130,5 @@ public class MapManager : MonoBehaviour {
                 currentData.move.SegmentEnabled(false);
         }
     }
-
 
 }

@@ -7,10 +7,16 @@ public class DT_Machine : MonoBehaviour
     public GameObject projectile;
     public float launchVelocity = 50.0f;
     public float launchFreq = 5.0f;
+    public bool isAlive = true;
+    [Tooltip("How long to wait before death poof")]
+    public float deathDelay = 2.0f;
 
     public Transform launchPosition;
 
     public Animator turrentRig;
+
+    public ParticleSystem deathParticles;
+    public GameObject deathPoofPrefab;
 
     /************************************************************************/
     /* Runtime Variables                                                    */
@@ -19,6 +25,7 @@ public class DT_Machine : MonoBehaviour
     private float count = 0.0f;
     private bool isBuildingUp = false;
     private bool isFired = false;
+    private bool isDead = false;
 
     // Start is called before the first frame update
     void Start()
@@ -28,6 +35,22 @@ public class DT_Machine : MonoBehaviour
 
     // Update is called once per frame
     void Update()
+    {
+        if (isAlive)
+        {
+            FiringLoop();
+        }
+        else
+        {
+            if (!isDead)
+            {
+                StartCoroutine(OnDeath());
+                isDead = true;
+            }
+        }
+    }
+
+    void FiringLoop()
     {
         /* Keep animation normal when the frequency has enough time to allow the animations to run for their full duration.
          * Run a different command set if it's too short
@@ -69,7 +92,7 @@ public class DT_Machine : MonoBehaviour
             {
                 turrentRig.SetFloat("AnimationSpeed", 1.0f);
             }
-            
+
             // Start build animation at start
             if (count >= divider && isBuildingUp == false)
             {
@@ -105,5 +128,29 @@ public class DT_Machine : MonoBehaviour
         newProjectile.transform.position = launchPosition.position;
         newProjectile.transform.localRotation = launchPosition.transform.localRotation;
         newProjectile.GetComponent<Rigidbody>().AddRelativeForce(launchPosition.forward * launchVelocity);
+    }
+
+    IEnumerator OnDeath()
+    {
+        deathParticles.Play();
+        turrentRig.SetTrigger("Died");
+
+        yield return new WaitForSeconds(deathDelay);
+
+        GameObject newPoof = Instantiate(deathPoofPrefab) as GameObject;
+
+        newPoof.transform.position = transform.position;
+
+        Destroy(gameObject);
+
+        yield return null;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isAlive = false;
+        }
     }
 }

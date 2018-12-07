@@ -65,7 +65,7 @@ public class CameraManager : MonoBehaviour {
 
     }
 
-    private void Update()
+    void Update()
     {
         // DEBUG: Notifies you if state has changed
         if (previousState != null && previousState != currentState)
@@ -99,19 +99,19 @@ public class CameraManager : MonoBehaviour {
         // Single subject
         if (gm.GetAllSubjectCount() == 1)
         {
-            return gm.GetAllSubjects();
+            return gm.allSubjects;
         }
 
         // 2 subjects
         if (gm.GetAllSubjectCount() == 2)
         {
-            if (Vector3.Distance(gm.GetAllSubjects()[0].position, gm.GetAllSubjects()[1].position) > focusThreshold)
+            if (Vector3.Distance(gm.allSubjects[0].position, gm.allSubjects[1].position) > focusThreshold)
             {
                 return new Transform[]{gm.GetMainSubject() };
             }
             else
             {
-                return gm.GetAllSubjects();
+                return gm.allSubjects;
             }
         }
 
@@ -121,14 +121,14 @@ public class CameraManager : MonoBehaviour {
         for (int s = 0; s < gm.GetAllSubjectCount(); s++)
         {
             float totalDistance = 0;
-            Transform currentTrans = gm.GetAllSubjects()[s];
+            Transform currentTrans = gm.allSubjects[s];
 
             for (int other = 0; other < gm.GetAllSubjectCount(); other++)
             {
-                if (currentTrans == gm.GetAllSubjects()[other])
+                if (currentTrans == gm.allSubjects[other])
                     continue;
 
-                float distanceFrom = Vector3.Distance(currentTrans.position, gm.GetAllSubjects()[other].position);
+                float distanceFrom = Vector3.Distance(currentTrans.position, gm.allSubjects[other].position);
                 
                 totalDistance += distanceFrom;
             }

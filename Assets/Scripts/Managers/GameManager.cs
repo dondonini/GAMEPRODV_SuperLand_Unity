@@ -115,30 +115,33 @@ public class GameManager : MonoBehaviour {
         Debug.LogWarning("Subject " + _targetSubject + " is not in the subject list.");
     }
 
-    public Transform[] GetAllSubjects()
+    public Transform[] allSubjects
     {
-        Transform[] tempArray;
+        get
+        {
+            Transform[] tempArray;
 
-        if (mainSubject)
-        {        
-            tempArray = new Transform[subjects.Count + 1];
-
-            // Add main subject as first
-            tempArray[0] = mainSubject;
-
-            // Add the rest of the subjects
-            for (int s = 1; s < subjects.Count + 1; s++)
+            if (mainSubject)
             {
-                tempArray[s] = subjects[s - 1];
-            }
-        }
-        else
-        { 
-            // Just set it as the subject array
-            tempArray = subjects.ToArray();
-        }
+                tempArray = new Transform[subjects.Count + 1];
 
-        return tempArray;
+                // Add main subject as first
+                tempArray[0] = mainSubject;
+
+                // Add the rest of the subjects
+                for (int s = 1; s < subjects.Count + 1; s++)
+                {
+                    tempArray[s] = subjects[s - 1];
+                }
+            }
+            else
+            {
+                // Just set it as the subject array
+                tempArray = subjects.ToArray();
+            }
+
+            return tempArray;
+        }
     }
 
     public Transform GetMainSubject()
@@ -158,6 +161,8 @@ public class GameManager : MonoBehaviour {
     {
         for (int s = 0; s < subjects.Count; s++)
         {
+            if (subjects[s].parent && subjects[s].parent.CompareTag("Land")) continue;
+
             if (subjects[s].position.y <= despawnHeight)
             {
                 if (subjects[s].CompareTag("Player"))

@@ -34,6 +34,8 @@ public class MapMovement : MonoBehaviour {
     [Header("References")]
     [SerializeField]
     Renderer thisRenderer;
+    [SerializeField]
+    Collider thisCollider;
 
     /************************************************************************/
     /* Cache                                                                */
@@ -49,14 +51,20 @@ public class MapMovement : MonoBehaviour {
     Coroutine currentTween;
     List<Transform> subjectChildren;
 
-	// Use this for initialization
-	void Start () {
+    private void Awake()
+    {
+        AttachGameObjects();
+    }
+
+    // Use this for initialization
+    void Start () {
 
         // Grab resources
         gameManager = GameManager.GetInstance();
 
         // Attach gameobjects to segment
-        AttachGameObjects();
+
+        UpdateEnabled();
 
         // Setting default variables
         rootPosition = transform.position;
@@ -68,13 +76,7 @@ public class MapMovement : MonoBehaviour {
 
         previousPosition = startingPos;
 
-        // Run starting functions
-        UpdateEnabled();
-        
-        if (segmentEnabled)
-            thisRenderer.enabled = true;
-        else
-            thisRenderer.enabled = false;
+        StartCoroutine(StartTween());
     }
 	
 	// Update is called once per frame
@@ -90,7 +92,7 @@ public class MapMovement : MonoBehaviour {
 
     void UpdateEnabled()
     {
-        if (!segmentEnabled)
+        if (segmentEnabled)
         {
             EnableSegment();
         }
@@ -108,17 +110,23 @@ public class MapMovement : MonoBehaviour {
         }
     }
 
-    void EnableSegment()
+    void DisableSegment()
     {
         targetPosition = rootPosition;
         targetPosition.y = gameManager.despawnHeight;
+    }
 
+    void DisableAttachments()
+    {
         // Remove any children from the subject list if any
         for (int c = 0; c < transform.childCount; c++)
         {
+            // Skip mesh from being scanned
+            if (transform.GetChild(c).name == "Mesh") continue;
+
             for (int s = 0; s < gameManager.GetAllSubjectCount(); s++)
             {
-                if (transform.GetChild(c) == gameManager.GetAllSubjects()[s])
+                if (transform.GetChild(c) == gameManager.allSubjects[s])
                 {
                     if (subjectChildren == null)
                         subjectChildren = new List<Transform>();
@@ -127,19 +135,22 @@ public class MapMovement : MonoBehaviour {
                     subjectChildren.Add(transform.GetChild(c).transform);
 
                     // Remove from public subject list
-                    gameManager.RemoveSubject(transform.GetChild(c).transform);
+                    gameManager.RemoveSubject(subjectChildren[0]);
 
                     // Deactivate subject
-                    transform.GetChild(c).gameObject.SetActive(false);
+                    subjectChildren[0].gameObject.SetActive(false);
                 }
             }
         }
     }
 
-    void DisableSegment()
+    void EnableSegment()
     {
         targetPosition = rootPosition;
+    }
 
+    void EnableAttachments()
+    {
         // Add cached subject back to public subject list
         if (subjectChildren != null && subjectChildren.Count != 0)
         {
@@ -147,7 +158,7 @@ public class MapMovement : MonoBehaviour {
             {
                 // Activate subject
                 subjectChildren[i].gameObject.SetActive(true);
-                
+
                 // Add subject into global subject list
                 gameManager.AddSubject(subjectChildren[i]);
 
@@ -159,13 +170,17 @@ public class MapMovement : MonoBehaviour {
 
     public void SegmentEnabled(bool val)
     {
-        if (ignoreManager) return;
         segmentEnabled = val;
     }
 
     public bool IsSegmentEnabled()
     {
         return segmentEnabled;
+    }
+
+    public bool IsIgnored()
+    {
+        return ignoreManager;
     }
 
     public Vector3 GetRootPosition()
@@ -184,7 +199,11 @@ public class MapMovement : MonoBehaviour {
 
         // Enable renderer is segment is enabled
         if (segmentEnabled)
+        { 
             thisRenderer.enabled = true;
+            thisCollider.enabled = true;
+            EnableAttachments();
+        }
 
         // Cache previous position for reference
         previousPosition = transform.position;
@@ -197,7 +216,11 @@ public class MapMovement : MonoBehaviour {
 
                 // Disable renderer if segment is disabled
                 if (!segmentEnabled)
+                { 
                     thisRenderer.enabled = false;
+                    thisCollider.enabled = false;
+                    DisableAttachments();
+                }
         }));
 
         yield return null;
