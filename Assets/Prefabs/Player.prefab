@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4454255503004626}
   - component: {fileID: 114964039757176802}
+  - component: {fileID: 6294618061866407050}
   - component: {fileID: 3907447253343990675}
   - component: {fileID: 8266793552636650368}
   - component: {fileID: 3356344970497625166}
@@ -51,10 +52,28 @@ MonoBehaviour:
   movementSpeed: 1000
   movementDrag: 2
   jumpForce: 350
+  fallForce: 20
   groundDistance: 0.1
   dashDistance: 2
   buttonCooldown: 0.5
   currentCamera: {fileID: 0}
+--- !u!114 &6294618061866407050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1692955520941754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fabf99cd5b84ac641af2719e2e6ad391, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 3
+  maxHealth: 3
+  heathCooldown: 2
+  coinScore: 0
+  starScore: 0
 --- !u!114 &3907447253343990675
 MonoBehaviour:
   m_ObjectHideFlags: 0

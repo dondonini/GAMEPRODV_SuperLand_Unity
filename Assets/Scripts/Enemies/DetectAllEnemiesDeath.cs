@@ -4,19 +4,18 @@ using UnityEngine;
 
 public class DetectAllEnemiesDeath : MonoBehaviour
 {
-    public List<GameObject> enemies = new List<GameObject>();
-    [SerializeField]
-    public List<Transform> attachedLocks = new List<Transform>();
-
+    [Tooltip("This sync key must match all the keys in the attached locks")]
     public string syncKey = "1111";
 
-    bool isAllDead = false;
+    public List<GameObject> attachedLocks = new List<GameObject>();
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public List<GameObject> enemies = new List<GameObject>();
+
+    /************************************************************************/
+    /* Runtime Variables                                                    */
+    /************************************************************************/
+
+    bool isAllDead = false;
 
     // Update is called once per frame
     void Update()

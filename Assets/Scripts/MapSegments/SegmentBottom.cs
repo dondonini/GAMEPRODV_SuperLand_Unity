@@ -8,10 +8,14 @@ public class SegmentBottom : MonoBehaviour
     public Transform segmentMesh;
 
     public float topOffset = 0.0f;
+    public bool setBottomEndToDefault = true;
+    public float bottomEndPosition = -50.0f;
 
     /************************************************************************/
     /* References                                                           */
     /************************************************************************/
+
+    const float DEFAULT_BOTTOM_END = -50.0f;
 
     private void OnDrawGizmosSelected()
     {
@@ -20,6 +24,14 @@ public class SegmentBottom : MonoBehaviour
         Gizmos.DrawCube(CalculateBottomPosition(), new Vector3(0.1f, 0.1f, 0.1f));
 
         Gizmos.DrawLine(CalculateBottomPosition(), CalculateTopPosition());
+    }
+
+    private void OnValidate()
+    {
+        if (bottomEndPosition > CalculateTopPosition().y - 0.1f)
+        {
+            bottomEndPosition = CalculateTopPosition().y - 0.1f;
+        }
     }
 
     private void Update()
@@ -49,8 +61,23 @@ public class SegmentBottom : MonoBehaviour
     Vector3 CalculateBottomPosition()
     {
         Vector3 bottomPosition = CalculateTopPosition();
-        bottomPosition.y = -50.0f;
 
+        // Default to -50.0f position for the bottom face or use custom
+        if (setBottomEndToDefault)
+        {
+            bottomPosition.y = DEFAULT_BOTTOM_END;
+        }
+        else
+        {
+            bottomPosition.y = bottomEndPosition;
+        }
+
+        // Prevent bottom face from going over the top
+        if (bottomPosition.y > CalculateTopPosition().y)
+        {
+            bottomPosition.y = CalculateTopPosition().y - 0.1f;
+        }
+        
         return bottomPosition;
     }
 }

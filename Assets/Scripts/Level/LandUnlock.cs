@@ -24,8 +24,6 @@ public class LandUnlock : MonoBehaviour, ILoading, ILock
 
     #endregion
 
-    
-
     // Variables
     public bool unlockSegments = false;
     [Tooltip("This should match the unlock task")]
@@ -84,7 +82,7 @@ public class LandUnlock : MonoBehaviour, ILoading, ILock
             }
             else
             {
-                Debug.LogWarning("There is no MapMovement script in " + seg + ". Could have been missplaced.");
+                Debug.LogWarning("There is no MapMovement script in " + seg + ". Could have been misplaced.");
             }
         }
 

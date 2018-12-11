@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WinnerButton : MonoBehaviour
+public class DamageOnTouch : MonoBehaviour
 {
-    GameManager gm;
-
     // Start is called before the first frame update
     void Start()
     {
-        gm = GameManager.GetInstance();
+        
     }
 
-    void OnCollisionEnter()
+    // Update is called once per frame
+    void Update()
     {
-        gm.WinState();
+        
     }
 }

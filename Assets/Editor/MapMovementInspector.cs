@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 
 [CustomEditor(typeof(MapMovement))]
+[CanEditMultipleObjects]
 public class MapMovementInspector : Editor
 {
     public override void OnInspectorGUI()
