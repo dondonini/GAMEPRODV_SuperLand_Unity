@@ -200,7 +200,7 @@ GameObject:
   - component: {fileID: 2087979129}
   - component: {fileID: 2087979130}
   m_Layer: 0
-  m_Name: TurretTower
+  m_Name: AimingTurret
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -234,17 +234,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b631ea599f61ee4c9ad136b62b55c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxMovementSpeed: 10
+  maxMovementSpeed: 2.5
   movementAcceleration: 1
   movementDeceleration: 1
-  maxChaseSpeed: 1
-  chaseDuration: 5
   turretLookRange: 10
   turrentLookFOV: 45
+  maxChaseSpeed: 1
+  chaseDuration: 2
+  chargeDuration: 1
+  firePause: 1
+  deathPause: 3
   rotationBody: {fileID: 4867639756765323239}
-  projectilePrefab: {fileID: 0}
+  projectilePrefab: {fileID: 5759844949405490215, guid: 1bc4dca320004024cbfbe47077f868ed,
+    type: 3}
   projectileSpawner: {fileID: 4335064381110368978}
+  deathPoofPrefab: {fileID: 5436236368803704780, guid: e4f9cec636cb8cf4cbf200432d0b8861,
+    type: 3}
   target: {fileID: 0}
+  animator: {fileID: 2087979127}
+  particleSys: {fileID: 2087979129}
   rotationVelocity: 0
 --- !u!95 &2087979127
 Animator:
@@ -256,7 +264,7 @@ Animator:
   m_GameObject: {fileID: 4335064380695988927}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 946ea1ff8084a604f903ef6a42a44648, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -463,7 +471,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 2
+      scalar: 5
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -579,7 +587,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.1
+      scalar: 0.25
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -960,7 +968,7 @@ ParticleSystem:
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 0
     donutRadius: 0.2
-    m_Position: {x: 0, y: 1, z: 0}
+    m_Position: {x: 0, y: 0.75, z: 0}
     m_Rotation: {x: -90, y: 0, z: 0}
     m_Scale: {x: 0.5, y: 0.5, z: 1}
     placementMode: 0
@@ -1041,7 +1049,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0.1
     radius:
-      value: 1
+      value: 2
       mode: 0
       spread: 0
       speed:

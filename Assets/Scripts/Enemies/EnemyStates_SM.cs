@@ -12,6 +12,8 @@ public interface EnemyStates_SM
 
     void ToAttackState();
 
+    void ToAlertState();
+
     void ToChaseState();
 
     void ToWanderState();

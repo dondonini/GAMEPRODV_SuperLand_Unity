@@ -22,26 +22,19 @@ public class MenuItems
         // Calculate transform average
         Vector3 positionAverage = totalVectors / selectedTransform.childCount;
 
-        // Save undo
-        Undo.SetCurrentGroupName("Centered Parent Pivot to Children");
-
         // Move all transforms out of parent
         foreach (Transform t in allChildrenTransforms)
         {
-            Undo.SetTransformParent(t.parent, null, "Centered Parent Pivot to Children");
-            Undo.IncrementCurrentGroup();
+            t.SetParent(null);
         }
 
         // Reposition selected transform to center
-        Undo.RecordObject(selectedTransform, "Centered Parent Pivot to Children");
         selectedTransform.position = positionAverage;
-        Undo.IncrementCurrentGroup();
 
         // Put all children back to parent;
         foreach (Transform t in allChildrenTransforms)
         {
-            Undo.SetTransformParent(t.parent, selectedTransform, "Centered Parent Pivot to Children");
-            Undo.IncrementCurrentGroup();
+            t.SetParent(selectedTransform);
         }
     }
 

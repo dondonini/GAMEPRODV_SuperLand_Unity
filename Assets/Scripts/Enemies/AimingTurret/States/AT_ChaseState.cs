@@ -60,6 +60,11 @@ public class AT_ChaseState : EnemyStates_SM
         stateMachine.currentState = stateMachine.attackState;
     }
 
+    public void ToAlertState()
+    {
+
+    }
+
     public void ToChaseState()
     {
         Debug.LogError("You cannot transition to current state!");
@@ -67,7 +72,7 @@ public class AT_ChaseState : EnemyStates_SM
 
     public void ToDeathState()
     {
-        throw new System.NotImplementedException();
+        
     }
 
     public void ToPatrolState()

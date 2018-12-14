@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour {
 
+    [SerializeField]
+    bool showWholeMap = false;
+    [SerializeField]
+    float showSpeed = 1.0f;
+    [SerializeField]
+    Transform startPosition;
+
     /************************************************************************/
     /* Instance Management                                                  */
     /************************************************************************/
@@ -31,9 +38,9 @@ public class MapManager : MonoBehaviour {
     /* Map Data Struct                                                      */
     /************************************************************************/
 
-    public struct MapSegmentData
+    public class MapSegmentData
     {
-        public MapMovement move;
+        public IMapMove move;
         public Transform tran;
     }
 
@@ -50,7 +57,11 @@ public class MapManager : MonoBehaviour {
 
     GameManager gameManager;
 
-    
+    /************************************************************************/
+    /* Runtime Variables                                                    */
+    /************************************************************************/
+
+    float showDistance = 1.0f;
 
     // Use this for initialization
     void Start () 
@@ -64,9 +75,26 @@ public class MapManager : MonoBehaviour {
 		// Collecting all map segments
         foreach (GameObject mapSeg in GameObject.FindGameObjectsWithTag("Land"))
         {
+            // Check if segment has a script that inherits from IMapMove
+            if (mapSeg.GetComponent<IMapMove>() == null)
+            {
+                // Check if parent has a script that inherits from IMapMove
+                if (mapSeg.GetComponentInParent<IMapMove>() == null)
+                {
+                    // Yeah... it's missing. Fix that!
+                    Debug.LogWarning(mapSeg.name + " is missing a IMapMove script!");
+                    continue;
+                }
+                else
+                {
+                    // It is a large segment
+                    continue;
+                }
+            }
+
             MapSegmentData newData = new MapSegmentData
             {
-                move = mapSeg.GetComponent<MapMovement>(),
+                move = mapSeg.GetComponent<IMapMove>(),
                 tran = mapSeg.transform,
             };
 
@@ -79,6 +107,8 @@ public class MapManager : MonoBehaviour {
 	void Update () 
     {
         UpdateMap();
+
+        showDistance += showSpeed * Time.deltaTime;
     }
 
     void UpdateMap()
@@ -108,26 +138,42 @@ public class MapManager : MonoBehaviour {
                     continue;
                 }
 
-                SubjectData foundSubjectData = currentInstance.GetComponent<SubjectData>();
+                
 
-                float distanceSqr = Vector3.Distance(currentInstance.position, currentData.move.GetRootPosition());
+                if (showWholeMap)
+                {
+                    float distanceSqr = Vector3.Distance(startPosition.position, currentData.move.GetRootPosition());
 
-                // Check if valid distance to spawn
-                if (foundSubjectData && distanceSqr < foundSubjectData.viewingRadius)
-                {
-                    result = true;
+                    if (distanceSqr < showDistance)
+                    {
+                        result = true;
+                    }
                 }
-                else if (!foundSubjectData && distanceSqr < gameManager.defaultViewableRadius)
+                else
                 {
-                    result = true;
+                    SubjectData foundSubjectData = currentInstance.GetComponent<SubjectData>();
+
+                    float internalDistance = Vector3.Distance(currentData.move.GetRootPosition(), currentData.move.GetSegmentBounds().ClosestPoint(currentInstance.position));
+
+                    float distanceSqr = Vector3.Distance(currentInstance.position, currentData.move.GetRootPosition());
+
+                    //distanceSqr -= internalDistance;
+
+                    // Check if valid distance to spawn
+                    if (foundSubjectData && distanceSqr < foundSubjectData.viewingRadius)
+                    {
+                        result = true;
+                    }
+                    else if (!foundSubjectData && distanceSqr < gameManager.defaultViewableRadius)
+                    {
+                        result = true;
+                    }
                 }
+                
                 
             }
 
-            if (result)
-                currentData.move.SegmentEnabled(true);
-            else
-                currentData.move.SegmentEnabled(false);
+            currentData.move.SegmentEnabled(result);
         }
     }
 

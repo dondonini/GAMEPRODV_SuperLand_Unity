@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MapMovement : MonoBehaviour, IMapMove {
+public class LargeMapMovement : MonoBehaviour, IMapMove {
     
     [Tooltip("Ignores manager instructions")]
     public bool ignoreManager = false;
 
     [SerializeField]
     bool segmentEnabled = false;
-
 
     [Header("Positioning")]
     [SerializeField]
@@ -32,10 +31,6 @@ public class MapMovement : MonoBehaviour, IMapMove {
     EasingFunction.Ease tweenEaseOutFunction;
 
     [Header("References")]
-    [SerializeField]
-    Renderer thisRenderer;
-    [SerializeField]
-    Collider thisCollider;
 
     /************************************************************************/
     /* Cache                                                                */
@@ -55,11 +50,6 @@ public class MapMovement : MonoBehaviour, IMapMove {
 
     private void OnDrawGizmosSelected()
     {
-        if (!thisRenderer)
-        {
-            thisRenderer = transform.GetComponentsInChildren<Renderer>()[0];
-        }
-
         // Make bound box for all children
         Gizmos.color = Color.white;
         Gizmos.DrawWireCube(GetAbsolutePosition(), GetAbsoluteScale());
@@ -77,7 +67,6 @@ public class MapMovement : MonoBehaviour, IMapMove {
         gameManager = GameManager.GetInstance();
 
         // Attach gameobjects to segment
-
         UpdateEnabled();
 
         // Setting default variables
@@ -204,31 +193,85 @@ public class MapMovement : MonoBehaviour, IMapMove {
         return rootPosition;
     }
 
-    public Vector3 GetAbsolutePosition()
-    {
-        return thisRenderer.transform.position;
-    }
-
     public Vector3 GetAbsoluteScale()
     {
-        if (finalBounds.size.x > thisRenderer.bounds.size.x ||
-            finalBounds.size.y > thisRenderer.bounds.size.y ||
-            finalBounds.size.z > thisRenderer.bounds.size.z)
+        // Recursivly get all renderers in children
+        Renderer[] allChildrenRenderers = transform.GetComponentsInChildren<Renderer>();
+
+        // Encapsulate all renderer bounds into one bound
+        Bounds segmentBounds = new Bounds();
+        for (int r = 0; r < allChildrenRenderers.Length; r++)
+        {
+            Renderer selectedRenderer = allChildrenRenderers[r];
+
+            segmentBounds.Encapsulate(selectedRenderer.bounds);
+        }
+
+        if (finalBounds.size.x > segmentBounds.size.x ||
+            finalBounds.size.y > segmentBounds.size.y ||
+            finalBounds.size.z > segmentBounds.size.z)
         {
             return finalBounds.size;
         }
         else
         {
-            finalBounds.size = thisRenderer.bounds.size;
+            finalBounds.size = segmentBounds.size;
 
             // Return results
-            return thisRenderer.bounds.size;
+            return segmentBounds.size;
         }
+
+        
+    }
+
+    public Vector3 GetAbsolutePosition()
+    {
+        // Recursivly get all transforms in children
+        Transform[] allChildrenTransforms = transform.GetComponentsInChildren<Transform>();
+
+        // Add all positions together
+        Vector3 totalPositions = Vector3.zero;
+
+        for (int t = 0; t < allChildrenTransforms.Length; t++)
+        {
+            Transform selectedTransform = allChildrenTransforms[t];
+
+            totalPositions += selectedTransform.position;
+        }
+
+        // Calculate average position
+        totalPositions /= allChildrenTransforms.Length;
+
+        return totalPositions;
     }
 
     public Bounds GetSegmentBounds()
     {
         return new Bounds(GetAbsolutePosition(), GetAbsoluteScale());
+    }
+
+    void DisableAllChildren()
+    {
+        if (transform.childCount == 0) return;
+
+        for (int childIndex = 0; childIndex < transform.childCount; childIndex++)
+        {
+            Transform selectedChild = transform.GetChild(childIndex);
+
+            selectedChild.gameObject.SetActive(false);
+        }
+    }
+
+    void ActivateAllChildren()
+    {
+        if (transform.childCount == 0) return;
+
+        for (int childIndex = 0; childIndex < transform.childCount; childIndex++)
+        {
+            Transform selectedChild = transform.GetChild(childIndex);
+
+            selectedChild.gameObject.SetActive(true);
+        }
     }
 
     IEnumerator StartTween()
@@ -243,8 +286,7 @@ public class MapMovement : MonoBehaviour, IMapMove {
         // Enable renderer is segment is enabled
         if (segmentEnabled)
         { 
-            thisRenderer.enabled = true;
-            thisCollider.enabled = true;
+            ActivateAllChildren();
             EnableAttachments();
         }
 
@@ -260,8 +302,7 @@ public class MapMovement : MonoBehaviour, IMapMove {
                 // Disable renderer if segment is disabled
                 if (!segmentEnabled)
                 { 
-                    thisRenderer.enabled = false;
-                    thisCollider.enabled = false;
+                    DisableAllChildren();
                     DisableAttachments();
                 }
         }));
@@ -294,7 +335,9 @@ public class MapMovement : MonoBehaviour, IMapMove {
         {
             float progress = elaspedTime / tweenDuration;
 
-            float easeExpression = EasingFunction.GetEasingFunction(tweenFunction)(0.0f, 1.0f, progress);
+            float easeExpression;
+
+            easeExpression = EasingFunction.GetEasingFunction(tweenFunction)(0.0f, 1.0f, progress);
 
             transform.position = Vector3.LerpUnclamped(previousPosition, targetPosition, easeExpression);
 

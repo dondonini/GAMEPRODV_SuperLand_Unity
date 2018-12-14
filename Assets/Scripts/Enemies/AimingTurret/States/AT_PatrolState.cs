@@ -54,7 +54,7 @@ public class AT_PatrolState : EnemyStates_SM
         // Check if target is in FOV
         if (angleToTarget <= stateMachine.turrentLookFOV * 0.5f && angleToTarget >= -stateMachine.turrentLookFOV * 0.5f)
         {
-            ToChaseState();
+            ToAlertState();
         }
     }
 
@@ -69,6 +69,11 @@ public class AT_PatrolState : EnemyStates_SM
     public void ToAttackState()
     {
 
+    }
+
+    public void ToAlertState()
+    {
+        stateMachine.currentState = stateMachine.alertState;
     }
 
     public void ToChaseState()
